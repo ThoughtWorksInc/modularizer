@@ -118,18 +118,21 @@ object ClusteringReport {
     *              "C" -> Path(Double.PositiveInfinity, null),
     *              "D" -> Path(0, null),
     *            ),
+    *          )
     *
     *          findNearestCluster(paths, js.Array("B", "C", "D"), "A") should be(NearestCluster.Zero)
     *          findNearestCluster(paths, js.Array("A", "C", "D"), "B") should be(NearestCluster.One("A"))
     *          findNearestCluster(paths, js.Array("B", "A", "D"), "C") should be(NearestCluster.One("B"))
-    *          findNearestCluster(paths, js.Array("B", "C", "A"), "D") should be(Neares
+    *          findNearestCluster(paths, js.Array("B", "C", "A"), "D") should be(NearestCluster.One("B"))
     *          findNearestCluster(paths, js.Array("C", "B", "A", "D"), "C") should be(NearestCluster.One("C"))
     *          }}}
     *
     */
-  private[modularizer] def findNearestCluster(paths: StringDictionary[StringDictionary[Path]],
-                                              clusterIds: js.Array[String],
-                                              currentNodeId: String): NearestCluster = {
+  private[modularizer] def findNearestCluster(
+      paths: StringDictionary[StringDictionary[Path]],
+      clusterIds: js.Array[String],
+      currentNodeId: String
+  ): NearestCluster = {
     @tailrec
     def hasDependency(clusterId: String, i: Int): NearestCluster = {
       if (i < clusterIds.length) {
@@ -208,7 +211,8 @@ object ClusteringReport {
     */
   private[modularizer] def calculateDependents(
       graph: Graph,
-      clusterIds: js.Array[String]): StringDictionary[StringDictionary[Path]] = {
+      clusterIds: js.Array[String]
+  ): StringDictionary[StringDictionary[Path]] = {
     def lookupEdges(currentNodeId: String): js.Array[Edge] = {
       val childrenEdges = childrenAsEdges(graph, currentNodeId)
       val parentEdges = parentAsEdges(graph, currentNodeId)
@@ -288,7 +292,8 @@ object ClusteringReport {
     */
   private[modularizer] def calculateDependencies(
       graph: Graph,
-      clusterIds: js.Array[String]): StringDictionary[StringDictionary[Path]] = {
+      clusterIds: js.Array[String]
+  ): StringDictionary[StringDictionary[Path]] = {
     def lookupEdges(currentNodeId: String): js.Array[Edge] = {
       val childrenEdges = childrenAsEdges(graph, currentNodeId)
       val parentEdges = parentAsEdges(graph, currentNodeId)
