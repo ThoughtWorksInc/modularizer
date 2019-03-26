@@ -1,14 +1,13 @@
 package com.thoughtworks.modularizer.model
 
 import com.thoughtworks.modularizer.model.ClusteringRule.Cluster
+import com.thoughtworks.modularizer.util._
 import org.scalablytyped.runtime.StringDictionary
 import typings.graphlibLib.graphlibMod._
 
 import scala.annotation.tailrec
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
-import scala.scalajs.js.{UndefOr, UndefOrOps, |}
-import scala.language.implicitConversions
 
 /**
   * @author 杨博 (Yang Bo)
@@ -16,13 +15,6 @@ import scala.language.implicitConversions
 final case class ClusteringReport(clusteringGraph: Graph, summaryGraph: Graph)
 
 object ClusteringReport {
-  private implicit final def unitOrOps[A](unitOr: Unit | A): UndefOrOps[A] = {
-    new UndefOrOps(unitOr.asInstanceOf[UndefOr[A]])
-  }
-  private implicit final def orUnitOps[A](unitOr: A | Unit): UndefOrOps[A] = {
-    new UndefOrOps(unitOr.asInstanceOf[UndefOr[A]])
-  }
-
   private val EmptyArray = new js.Array[Edge](0)
 
   def cluster(unpatchedGraph: Graph, rule: ClusteringRule): ClusteringReport = {
@@ -97,44 +89,41 @@ object ClusteringReport {
     *
     * @example Nearest dependents in a graph of A -> B -> C, A -> C and B -> D,
     *          {{{
-    *                    import scala.scalajs.js
-    *                    import typings.graphlibLib.graphlibMod._
-    *                    import org.scalablytyped.runtime.StringDictionary
-    *                    import com.thoughtworks.modularizer.model.ClusteringReport._
-    *                    val paths = StringDictionary(
-    *                      "A" -> StringDictionary(
-    *                        "A" -> Path(0.0, null),
-    *                        "C" -> Path(1.0, "A"),
-    *                        "B" -> Path(1.0, "A"),
-    *                        "D" -> Path(Double.PositiveInfinity, null),
-    *                      ),
-    *                      "B" -> StringDictionary(
-    *                        "A" -> Path(Double.PositiveInfinity, null),
-    *                        "B" -> Path(0, null),
-    *                        "C" -> Path(1.0, "B"),
-    *                        "D" -> Path(1.0, "B"),
-    *                      ),
-    *                      "C" -> StringDictionary(
-    *                        "A" -> Path(Double.PositiveInfinity, null),
-    *                        "B" -> Path(Double.PositiveInfinity, null),
-    *                        "C" -> Path(0, null),
-    *                        "D" -> Path(Double.PositiveInfinity, null),
-    *                      ),
-    *                      "D" -> StringDictionary(
-    *                        "A" -> Path(Double.PositiveInfinity, null),
-    *                        "B" -> Path(Double.PositiveInfinity, null),
-    *                        "C" -> Path(Double.PositiveInfinity, null),
-    *                        "D" -> Path(0, null),
-    *                      ),
-    *                    )
+    *          import scala.scalajs.js
+    *          import typings.graphlibLib.graphlibMod._
+    *          import org.scalablytyped.runtime.StringDictionary
+    *          import com.thoughtworks.modularizer.model.ClusteringReport._
+    *          val paths = StringDictionary(
+    *            "A" -> StringDictionary(
+    *              "A" -> Path(0.0, null),
+    *              "C" -> Path(1.0, "A"),
+    *              "B" -> Path(1.0, "A"),
+    *              "D" -> Path(Double.PositiveInfinity, null),
+    *            ),
+    *            "B" -> StringDictionary(
+    *              "A" -> Path(Double.PositiveInfinity, null),
+    *              "B" -> Path(0, null),
+    *              "C" -> Path(1.0, "B"),
+    *              "D" -> Path(1.0, "B"),
+    *            ),
+    *            "C" -> StringDictionary(
+    *              "A" -> Path(Double.PositiveInfinity, null),
+    *              "B" -> Path(Double.PositiveInfinity, null),
+    *              "C" -> Path(0, null),
+    *              "D" -> Path(Double.PositiveInfinity, null),
+    *            ),
+    *            "D" -> StringDictionary(
+    *              "A" -> Path(Double.PositiveInfinity, null),
+    *              "B" -> Path(Double.PositiveInfinity, null),
+    *              "C" -> Path(Double.PositiveInfinity, null),
+    *              "D" -> Path(0, null),
+    *            ),
     *
-    *
-    *                    findNearestCluster(paths, js.Array("B", "C", "D"), "A") should be(NearestCluster.Zero)
-    *                    findNearestCluster(paths, js.Array("A", "C", "D"), "B") should be(NearestCluster.One("A"))
-    *                    findNearestCluster(paths, js.Array("B", "A", "D"), "C") should be(NearestCluster.One("B"))
-    *                    findNearestCluster(paths, js.Array("B", "C", "A"), "D") should be(NearestCluster.One("B"))
-    *
-    *                    findNearestCluster(paths, js.Array("C", "B", "A", "D"), "C") should be(NearestCluster.One("C"))
+    *          findNearestCluster(paths, js.Array("B", "C", "D"), "A") should be(NearestCluster.Zero)
+    *          findNearestCluster(paths, js.Array("A", "C", "D"), "B") should be(NearestCluster.One("A"))
+    *          findNearestCluster(paths, js.Array("B", "A", "D"), "C") should be(NearestCluster.One("B"))
+    *          findNearestCluster(paths, js.Array("B", "C", "A"), "D") should be(Neares
+    *          findNearestCluster(paths, js.Array("C", "B", "A", "D"), "C") should be(NearestCluster.One("C"))
     *          }}}
     *
     */
@@ -328,4 +317,5 @@ object ClusteringReport {
     case object Multiple extends NearestCluster
 
   }
+
 }
