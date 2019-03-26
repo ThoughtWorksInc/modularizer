@@ -2,10 +2,12 @@ enablePlugins(ScalaJSBundlerPlugin)
 
 enablePlugins(Example)
 
-// Don't enable ScalaJSWeb due to https://github.com/scalacenter/scalajs-bundler/pull/288
-// enablePlugins(ScalaJSWeb)
+enablePlugins(ScalaJSWeb)
 
-libraryDependencies += "com.thoughtworks.binding" %%% "dom" % "11.6.0"
+// ScalaJSWeb only works with ScalaJSBundlerPlugin when bundling mode is library-only.
+webpackBundlingMode := BundlingMode.LibraryOnly()
+
+libraryDependencies += "com.thoughtworks.binding" %%% "dom" % "11.6.1"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "jsonhashroute" % "0.1.0"
 

@@ -1,10 +1,11 @@
 package com.thoughtworks.modularizer.model
+import scala.collection.immutable
 
 /**
   * @author 杨博 (Yang Bo)
   */
-final case class ClusteringRule(breakingEdges: Set[(String, String)], clusters: Seq[ClusteringRule.Cluster]) {}
+final case class ClusteringRule(breakingEdges: Set[(String, String)], clusters: immutable.Seq[ClusteringRule.Cluster]) {}
 object ClusteringRule {
-  case class Cluster(parent: String, children: Seq[String])
+  case class Cluster(parent: String, children: immutable.Seq[String])
 
 }

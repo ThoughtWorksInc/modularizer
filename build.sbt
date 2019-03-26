@@ -16,4 +16,6 @@ libraryDependencies += "org.webjars" % "jquery" % "3.3.1-2"
 
 libraryDependencies += "org.webjars" % "popper.js" % "1.14.7"
 
+libraryDependencies += "org.webjars" % "font-awesome" % "5.8.1"
+
 ThisBuild / organization := "com.thoughtworks.modularizer"
