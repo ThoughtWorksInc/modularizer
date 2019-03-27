@@ -12,12 +12,12 @@ import scala.scalajs.js.JSConverters._
 /**
   * @author 杨博 (Yang Bo)
   */
-final case class ClusteringReport(clusteringGraph: Graph, summaryGraph: Graph)
+final case class ClusteringReport private (clusteringGraph: Graph)
 
 object ClusteringReport {
   private val EmptyArray = new js.Array[Edge](0)
 
-  def cluster(unpatchedGraph: Graph, rule: ClusteringRule): ClusteringReport = {
+  def apply(unpatchedGraph: Graph, rule: ClusteringRule): ClusteringReport = {
 
     import rule._
     val patchedGraph = new Graph(new GraphOptions {
@@ -81,7 +81,7 @@ object ClusteringReport {
       }
     }
 
-    new ClusteringReport(patchedGraph, null /*TODO*/ )
+    new ClusteringReport(patchedGraph)
 
   }
 

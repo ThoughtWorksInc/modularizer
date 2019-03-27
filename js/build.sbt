@@ -7,13 +7,17 @@ enablePlugins(ScalaJSWeb)
 // ScalaJSWeb only works with ScalaJSBundlerPlugin when bundling mode is library-only.
 webpackBundlingMode := BundlingMode.LibraryOnly()
 
-libraryDependencies += "com.thoughtworks.binding" %%% "dom" % "11.6.1"
+libraryDependencies += "com.thoughtworks.binding" %%% "dom" % "11.7.0"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "jsonhashroute" % "0.1.0"
 
-libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.1.0"
+libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.1.0-5-8a619f31"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
+
+libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-59-8c6a459b"
+
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
 
