@@ -1,9 +1,9 @@
-package com.thoughtworks.modularizer
+package com.thoughtworks.modularizer.view
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{LatestEvent, dom}
-import com.thoughtworks.modularizer.model.{JdepsGraph, PageState}
 import com.thoughtworks.modularizer.model.PageState.WorkBoardState
-import org.scalajs.dom._
+import com.thoughtworks.modularizer.model.{JdepsGraph, PageState}
+import org.scalajs.dom.{Event, FileList, FileReader, UIEvent}
 import typings.graphlibDashDotLib.graphlibDashDotMod
 import typings.graphlibLib.graphlibMod.Graph
 

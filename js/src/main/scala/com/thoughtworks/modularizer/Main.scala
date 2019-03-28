@@ -3,8 +3,10 @@ import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.Component.partialUpdate
 import com.thoughtworks.binding._
+import com.thoughtworks.modularizer.view._
 import com.thoughtworks.modularizer.model.PageState
 import com.thoughtworks.modularizer.model.PageState.WorkBoardState
+import com.thoughtworks.modularizer.view.{ImportJdepsDotFile, WorkBoard}
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Node
 import typings.graphlibLib.graphlibMod.Graph

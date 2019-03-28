@@ -1,19 +1,11 @@
-package com.thoughtworks.modularizer
-import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
-import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
-import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.Extractor._
-import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster, PageState}
+package com.thoughtworks.modularizer.view
+import com.thoughtworks.binding.Binding.{Var, Vars}
+import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.model.PageState.WorkBoardState
-import org.scalajs.dom._
-import org.scalajs.dom.raw._
+import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster, PageState}
+import com.thoughtworks.modularizer.view.workboard.{DependencyExplorer, RuleEditor, SummaryDiagram}
+import org.scalajs.dom.Event
 import typings.graphlibLib.graphlibMod.Graph
-import typings.graphlibLib.graphlibMod.algNs
-import com.thoughtworks.modularizer.util._
-
-import scala.collection.immutable
-import scala.scalajs.js
-import scala.scalajs.js.UndefOr
 
 /**
   * @author 杨博 (Yang Bo)
@@ -33,11 +25,16 @@ object WorkBoard {
         val rule = Var(ClusteringRule(Set.empty, Nil))
         val draftClusters = Vars.empty[DraftCluster]
         // TODO: read draftClusters from saved files
-        val clusteringReport = rule.map(ClusteringReport(graph, _))
+        val clusteringReport = Binding {
+          ClusteringReport(graph, rule.bind)
+        }
+
+        val ruleEditor = new RuleEditor(draftClusters, clusteringReport)
+
         <div class="d-flex container-fluid flex-row">
-          { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule).bind }
+          { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
           { SummaryDiagram.render(graph, clusteringReport).bind }
-          { RuleEditor.render(draftClusters, clusteringReport).bind }
+          { ruleEditor.view.bind }
         </div>
     }
   }

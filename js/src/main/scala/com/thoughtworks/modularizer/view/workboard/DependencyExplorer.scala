@@ -1,11 +1,10 @@
-package com.thoughtworks.modularizer
-import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
+package com.thoughtworks.modularizer.view.workboard
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.util._
 import org.scalajs.dom.raw.{Event, HTMLLIElement, Node, UIEvent}
 import typings.graphlibLib.graphlibMod.Graph
-import util._
 
 import scala.collection.immutable
 import scala.scalajs.js
@@ -36,7 +35,7 @@ object DependencyExplorer {
         nodeId
       }</span>
       {
-        if (draftClusters.length.map(_ == 0).bind) {
+        if (draftClusters.isEmpty.bind) {
           Constants()
         } else {
           val currentClusterSeq = for {
@@ -137,13 +136,10 @@ object DependencyExplorer {
       <details id="nodeDetails">
         <summary>Dependents</summary>
         {
-          val isOpen =
-            new LatestEvent[Event](nodeDetails, "toggle")
-              .map { _ =>
-                nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]
-              }
-              .bind
-          if (isOpen) {
+          if ({
+            val _ = new LatestEvent[Event](nodeDetails, "toggle").bind
+            nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]
+          }) {
             Constants(dependents: _*).flatMapBinding { edge =>
               neighborList(graph, edge.v, draftClusters)
             }
@@ -202,38 +198,39 @@ object DependencyExplorer {
   }
 
   object DependencyExplorerTab {
-    case object Facades extends DependencyExplorerTab
-    case object Utilities extends DependencyExplorerTab
-    case object Unassigned extends DependencyExplorerTab
+    case object Root extends DependencyExplorerTab
+    case object Leaf extends DependencyExplorerTab
+    case object Selection extends DependencyExplorerTab
   }
 
   @dom
   def render(graph: Graph,
              draftClusters: Vars[DraftCluster],
              clusteringReport: Binding[ClusteringReport],
-             rule: Var[ClusteringRule]): Binding[Node] =
+             rule: Var[ClusteringRule],
+             selectedNodeIds: BindingSeq[String]): Binding[Node] =
     <div class="flex-shrink-1 col-auto" style:minWidth="0">{
-    val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Facades)
+    val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Root)
     <div class="card">
       <ul class="nav nav-tabs bg-light sticky-top">
-        { DependencyExplorerTab.Facades.navItem(currentTab).bind }
-        { DependencyExplorerTab.Utilities.navItem(currentTab).bind }
+        { DependencyExplorerTab.Root.navItem(currentTab).bind }
+        { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
 
         <li class="nav-item">
           <a
             href=""
             onclick={ event: Event =>
               event.preventDefault()
-              currentTab.value = DependencyExplorerTab.Unassigned
+              currentTab.value = DependencyExplorerTab.Selection
             }
             classMap={
               Map(
-                "active" -> (currentTab.bind == DependencyExplorerTab.Unassigned),
+                "active" -> (currentTab.bind == DependencyExplorerTab.Selection),
                 "nav-link" -> true
               )
             }
           >
-            { DependencyExplorerTab.Unassigned.toString }
+            { DependencyExplorerTab.Selection.toString }
             <button
               type="button"
               class="badge badge-secondary"
@@ -246,17 +243,16 @@ object DependencyExplorer {
       </ul>
       <div class="card-body">{
         currentTab.bind match {
-          case DependencyExplorerTab.Facades =>
+          case DependencyExplorerTab.Root =>
             Constants(graph.sources(): _*).flatMapBinding { nodeId =>
               neighborList(graph, nodeId, draftClusters)
             }
-          case DependencyExplorerTab.Utilities =>
+          case DependencyExplorerTab.Leaf =>
             Constants(graph.sinks(): _*).flatMapBinding { nodeId =>
               neighborList(graph, nodeId, draftClusters)
             }
-          case DependencyExplorerTab.Unassigned =>
-            val unassignedNodes = Constants.empty[String] // TODO:
-            unassignedNodes.flatMapBinding { nodeId =>
+          case DependencyExplorerTab.Selection =>
+            selectedNodeIds.flatMapBinding { nodeId =>
               neighborList(graph, nodeId, draftClusters)
             }
         }

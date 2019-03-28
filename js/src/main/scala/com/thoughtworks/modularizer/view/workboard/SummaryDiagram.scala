@@ -1,4 +1,4 @@
-package com.thoughtworks.modularizer
+package com.thoughtworks.modularizer.view.workboard
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.model.ClusteringReport
 import typings.graphlibLib.graphlibMod.Graph
