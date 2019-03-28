@@ -20,5 +20,3 @@ resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
 addSbtPlugin("org.scalablytyped" % "sbt-scalablytyped" % "201903180536")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-web-scalajs-bundler" % "0.14.0")
-
-addSbtCoursier
