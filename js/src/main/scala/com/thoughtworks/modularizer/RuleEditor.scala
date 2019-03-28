@@ -5,7 +5,8 @@ import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import com.thoughtworks.modularizer.model.{ClusteringReport, DraftCluster}
-import org.scalajs.dom.raw.{Event, HTMLOptionElement, HTMLSelectElement}
+import org.scalajs.dom._
+import raw.{Event, HTMLOptionElement, HTMLSelectElement}
 import typings.graphlibLib.graphlibMod.Graph
 
 import scala.scalajs.js
@@ -50,7 +51,7 @@ object RuleEditor {
   def builtInCluster[Items: BindableSeq.Lt[?, String]](items: Items,
                                                        clusterName: String,
                                                        labelBgClass: String,
-                                                       labelTextClass: String) = {
+                                                       labelTextClass: String): (Binding[Node], BindingSeq[String]) = {
     val unlockedNodes = items.bindSeq
     val (selectElement, selectedItems) = multipleSelect(unlockedNodes)
 
@@ -84,7 +85,7 @@ object RuleEditor {
   @dom
   def render(draftClusters: Vars[DraftCluster], clusteringReport: Binding[ClusteringReport]) = {
     val facadeNodes = clusteringReport.map { report =>
-      (report.clusteringGraph.children("sources"): UndefOr[js.Array[String]]).getOrElse(js.Array())
+      (report.clusteringGraph.children("source"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
     val utilityNodes = clusteringReport.map { report =>
       (report.clusteringGraph.children("sink"): UndefOr[js.Array[String]]).getOrElse(js.Array())
@@ -102,7 +103,7 @@ object RuleEditor {
     val (facadeCard, selectedFacades) = builtInCluster(facadeNodes, "Facades", "bg-dark", "text-light")
     val (utilityCard, selectedUtilities) = builtInCluster(utilityNodes, "Utilities", "bg-light", "text-dark")
     val (unassignedCard, selectedUnassignedNodes) =
-      builtInCluster(unassignedNodes, "Unassigned", "bg-secondary", "text-light")
+      builtInCluster(unassignedNodes, "Unassigned", "bg-gray", "text-dark")
 
     <div class="flex-shrink-1 col-auto">
       { facadeCard.bind }

@@ -15,7 +15,7 @@ libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.1.0-5-8
 
 libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
-libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-59-8c6a459b"
+libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-64-5a774591"
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
 
