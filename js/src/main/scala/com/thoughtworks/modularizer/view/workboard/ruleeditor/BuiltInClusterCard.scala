@@ -2,6 +2,7 @@ package com.thoughtworks.modularizer.view.workboard.ruleeditor
 
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
+import com.thoughtworks.modularizer.model.DraftCluster.ClusterColor
 import org.scalajs.dom._
 
 import scala.scalajs.js
@@ -11,8 +12,7 @@ import scala.scalajs.js
   */
 class BuiltInClusterCard[Items: BindableSeq.Lt[?, String]](items: Items,
                                                            clusterName: String,
-                                                           labelBgClass: String,
-                                                           labelTextClass: String) {
+                                                           clusterColor: ClusterColor) {
 
   private val selectUnlockedNodes = new MultipleSelect(items.bindSeq)
 
@@ -22,14 +22,12 @@ class BuiltInClusterCard[Items: BindableSeq.Lt[?, String]](items: Items,
     <div class="card m-2">
       <div class="input-group sticky-top">
         <div class="input-group-prepend">
-          <label class={s"input-group-text $labelBgClass $labelTextClass"}>Built-in Cluster</label>
+          <label class="input-group-text"
+                 style:backgroundColor={clusterColor.backgroundColor}
+                 style:color={clusterColor.textColor}
+          >Built-in Cluster</label>
         </div>
-        <input
-          type="text"
-          readOnly="readOnly"
-          class="form-control"
-          value={ clusterName }
-        />
+        <input type="text" readOnly="readOnly" class="form-control" value={ clusterName }/>
       </div>
       <div class="card-body">
         <details id="unlockedDetails">

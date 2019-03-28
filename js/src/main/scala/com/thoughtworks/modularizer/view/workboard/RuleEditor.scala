@@ -4,6 +4,7 @@ import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.model.{ClusteringReport, DraftCluster}
+import DraftCluster._
 import com.thoughtworks.modularizer.util._
 import com.thoughtworks.modularizer.view.workboard.ruleeditor._
 import org.scalajs.dom._
@@ -17,14 +18,14 @@ class RuleEditor(draftClusters: Vars[DraftCluster], clusteringReport: Binding[Cl
     val facadeNodes = clusteringReport.map { report: ClusteringReport =>
       (report.clusteringGraph.children("source"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
-    new BuiltInClusterCard(facadeNodes, "Facades", "bg-dark", "text-light")
+    new BuiltInClusterCard(facadeNodes, "Facades", FacadeColorClass)
   }
 
   private val utilityCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
     val utilityNodes = clusteringReport.map { report: ClusteringReport =>
       (report.clusteringGraph.children("sink"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
-    new BuiltInClusterCard(utilityNodes, "Utilities", "bg-light", "text-dark")
+    new BuiltInClusterCard(utilityNodes, "Utilities", UtilityColorClass)
   }
 
   private val unassignedCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
@@ -38,7 +39,7 @@ class RuleEditor(draftClusters: Vars[DraftCluster], clusteringReport: Binding[Cl
         if isUnassigned(nodeId)
       } yield nodeId
     }
-    new BuiltInClusterCard(unassignedNodes, "Unassigned", "bg-gray", "text-dark")
+    new BuiltInClusterCard(unassignedNodes, "Unassigned", UnassignedColorClass)
   }
 
   private val customClusterCards: BindingSeq[CustomClusterCard] = for (draftCluster <- draftClusters) yield {
@@ -79,7 +80,7 @@ class RuleEditor(draftClusters: Vars[DraftCluster], clusteringReport: Binding[Cl
                 .groupBy(_.color.value)
                 .mapValues(_.size)
                 .withDefaultValue(0)
-            val nextColor = DraftCluster.ClusterColors.minBy(clusterColorHistogram)
+            val nextColor = DraftCluster.CustomClusterColors.minBy(clusterColorHistogram)
 
             draftClusters.value += DraftCluster(Var(clusterName.value), Vars.empty, Var(nextColor))
             clusterName.value = ""

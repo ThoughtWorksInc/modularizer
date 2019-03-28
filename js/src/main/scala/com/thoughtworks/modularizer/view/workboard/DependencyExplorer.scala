@@ -2,6 +2,7 @@ package com.thoughtworks.modularizer.view.workboard
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster}
+import DraftCluster._
 import com.thoughtworks.modularizer.util._
 import org.scalajs.dom.raw.{Event, HTMLLIElement, Node, UIEvent}
 import typings.graphlibLib.graphlibMod.Graph
@@ -29,7 +30,10 @@ object DependencyExplorer {
   }
 
   @dom
-  def neighborList(graph: Graph, nodeId: String, draftClusters: Vars[DraftCluster]): Binding[BindingSeq[Node]] = {
+  def neighborList(graph: Graph,
+                   clusteringReport: Binding[ClusteringReport],
+                   nodeId: String,
+                   draftClusters: Vars[DraftCluster]): Binding[BindingSeq[Node]] = {
     <div class="d-flex flex-row align-items-baseline">
       <span title={ nodeId } style:direction="rtl" class="mr-auto flex-shrink-1 text-right text-truncate">{
         nodeId
@@ -45,37 +49,70 @@ object DependencyExplorer {
           } yield draftCluster
           currentClusterSeq.length.bind match {
             case 0 =>
-              Constants(<div class="dropdown">
-                <button
-                  type="button"
-                  class="badge badge-secondary dropdown-toggle"
-                  data:data-toggle="dropdown"
-                >Unassigned</button>
-                <div class="dropdown-menu">{
-                  for (draftCluster <- draftClusters) yield {
-                    <button
-                      class="dropdown-item"
-                      type="button"
-                      onclick={ _: Event =>
-                        val _ = draftCluster.nodeIds.value += nodeId
+              val clusterColor = Binding {
+                (clusteringReport.bind.clusteringGraph.parent(nodeId): Any) match {
+                  case () =>
+                    UnassignedColorClass
+                  case "source" =>
+                    FacadeColorClass
+                  case "sink" =>
+                    UtilityColorClass
+                  case customCluster: String =>
+                    draftClusters.flatMap { draftCluster =>
+                      if (draftCluster.name.bind == customCluster) {
+                        Constants(draftCluster.color.bind)
+                      } else {
+                        Constants.empty
                       }
-                    >
-                      Assign to
-                      <span class="badge badge-secondary" style:backgroundColor={ draftCluster.color.bind }>{
-                        draftCluster.name.bind
-                      }</span>
-                    </button>
-                  }
-                }</div>
-              </div>)
+                    }.all.bind.headOption.getOrElse(UnassignedColorClass)
+                }
+              }
+              Constants(
+                <div class="dropdown">
+                  <button
+                    type="button"
+                    data:data-toggle="dropdown"
+                    class="badge badge-secondary dropdown-toggle"
+                    style:backgroundColor={clusterColor.bind.backgroundColor}
+                    style:color={clusterColor.bind.textColor}
+                  >
+                    <span class="fas fa-unlock"></span>
+                    {
+                      clusteringReport.bind.clusteringGraph.parent(nodeId).fold("Unassigned") {
+                        case "source" => "Facades"
+                        case "sink" => "Utilities"
+                        case customCluster => customCluster
+                      }
+                    }
+                  </button>
+                  <div class="dropdown-menu">{
+                    for (draftCluster <- draftClusters) yield {
+                      <button
+                        class="dropdown-item"
+                        type="button"
+                        onclick={ _: Event =>
+                          draftCluster.nodeIds.value += nodeId
+                        }
+                      >
+                        Assign to
+                        <span
+                          class="badge badge-secondary"
+                          style:backgroundColor={draftCluster.color.bind.backgroundColor}
+                          style:color={draftCluster.color.bind.textColor}>{
+                          draftCluster.name.bind
+                        }</span>
+                      </button>
+                    }
+                  }</div>
+                </div>
+              )
             case _ =>
               for (currentCluster <- currentClusterSeq) yield <div class="dropdown">
                 <button
                   type="button"
-                  class="badge badge-secondary dropdown-toggle"
                   data:data-toggle="dropdown"
-                  style:color="var(--white)"
-                  style:backgroundColor={ currentCluster.color.bind }
+                  class="badge badge-secondary dropdown-toggle"
+                  style:backgroundColor={currentCluster.color.bind.backgroundColor} style:color={currentCluster.color.bind.textColor}
                 >
                   <span class="fas fa-lock"></span>
                   { currentCluster.name.bind }
@@ -88,11 +125,11 @@ object DependencyExplorer {
                         class="dropdown-item"
                         type="button"
                         onclick={ _: Event =>
-                          val _ = currentCluster.nodeIds.value -= nodeId
+                          currentCluster.nodeIds.value -= nodeId
                         }
                       >
                         Unassign from
-                        <span class="badge badge-secondary" style:backgroundColor={ draftCluster.color.bind }>{
+                        <span class="badge badge-secondary" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>{
                           draftCluster.name.bind
                         }</span>
                       </button>
@@ -102,11 +139,11 @@ object DependencyExplorer {
                         type="button"
                         onclick={ _: Event =>
                           currentCluster.nodeIds.value -= nodeId
-                          val _ = draftCluster.nodeIds.value += nodeId
+                          draftCluster.nodeIds.value += nodeId
                         }
                       >
                         Assign to
-                        <span class="badge badge-secondary" style:backgroundColor={ draftCluster.color.bind }>{
+                        <span class="badge badge-secondary" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>{
                           draftCluster.name.bind
                         }</span>
                       </button>
@@ -119,13 +156,16 @@ object DependencyExplorer {
       }
     </div>
     <div class="pl-2 border-left">
-      { dependencyList(graph, nodeId, draftClusters).bind }
-      { dependentList(graph, nodeId, draftClusters).bind }
+      { dependencyList(graph, clusteringReport, nodeId, draftClusters).bind }
+      { dependentList(graph, clusteringReport, nodeId, draftClusters).bind }
     </div>
   }
 
   @dom
-  def dependentList(graph: Graph, nodeId: String, draftClusters: Vars[DraftCluster]): Binding[Node] = {
+  def dependentList(graph: Graph,
+                    clusteringReport: Binding[ClusteringReport],
+                    nodeId: String,
+                    draftClusters: Vars[DraftCluster]): Binding[Node] = {
     val dependents = for {
       edge <- graph.inEdges(nodeId).getOrElse(js.Array())
       if edge.v != edge.w
@@ -141,7 +181,7 @@ object DependencyExplorer {
             nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]
           }) {
             Constants(dependents: _*).flatMapBinding { edge =>
-              neighborList(graph, edge.v, draftClusters)
+              neighborList(graph, clusteringReport, edge.v, draftClusters)
             }
           } else {
             Constants()
@@ -152,7 +192,10 @@ object DependencyExplorer {
   }
 
   @dom
-  def dependencyList(graph: Graph, nodeId: String, draftClusters: Vars[DraftCluster]): Binding[Node] = {
+  def dependencyList(graph: Graph,
+                     clusteringReport: Binding[ClusteringReport],
+                     nodeId: String,
+                     draftClusters: Vars[DraftCluster]): Binding[Node] = {
     val dependencies = for {
       edge <- graph.outEdges(nodeId).getOrElse(js.Array())
       if edge.v != edge.w
@@ -166,7 +209,7 @@ object DependencyExplorer {
           val _ = new LatestEvent[UIEvent](nodeDetails, "toggle").bind
           if (nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]) {
             Constants(dependencies: _*).flatMapBinding { edge =>
-              neighborList(graph, edge.w, draftClusters)
+              neighborList(graph, clusteringReport, edge.w, draftClusters)
             }
           } else {
             Constants()
@@ -245,15 +288,15 @@ object DependencyExplorer {
         currentTab.bind match {
           case DependencyExplorerTab.Root =>
             Constants(graph.sources(): _*).flatMapBinding { nodeId =>
-              neighborList(graph, nodeId, draftClusters)
+              neighborList(graph, clusteringReport, nodeId, draftClusters)
             }
           case DependencyExplorerTab.Leaf =>
             Constants(graph.sinks(): _*).flatMapBinding { nodeId =>
-              neighborList(graph, nodeId, draftClusters)
+              neighborList(graph, clusteringReport, nodeId, draftClusters)
             }
           case DependencyExplorerTab.Selection =>
             selectedNodeIds.flatMapBinding { nodeId =>
-              neighborList(graph, nodeId, draftClusters)
+              neighborList(graph, clusteringReport, nodeId, draftClusters)
             }
         }
       }</div>

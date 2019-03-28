@@ -34,10 +34,7 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
     <div class="card m-2">
       <div class="input-group sticky-top">
         <div class="input-group-prepend">
-          <label
-            class="input-group-text text-light"
-            style:backgroundColor={draftCluster.color.bind}
-          >Cluster</label>
+          <label class="input-group-text" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>Cluster</label>
         </div>
         <input
           id="clusterName"
