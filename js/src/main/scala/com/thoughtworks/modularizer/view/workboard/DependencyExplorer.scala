@@ -50,7 +50,7 @@ object DependencyExplorer {
           currentClusterSeq.length.bind match {
             case 0 =>
               val clusterColor = Binding {
-                (clusteringReport.bind.clusteringGraph.parent(nodeId): Any) match {
+                (clusteringReport.bind.compoundGraph.parent(nodeId): Any) match {
                   case () =>
                     UnassignedColorClass
                   case "source" =>
@@ -78,7 +78,7 @@ object DependencyExplorer {
                   >
                     <span class="fas fa-unlock"></span>
                     {
-                      clusteringReport.bind.clusteringGraph.parent(nodeId).fold("Unassigned") {
+                      clusteringReport.bind.compoundGraph.parent(nodeId).fold("Unassigned") {
                         case "source" => "Facades"
                         case "sink" => "Utilities"
                         case customCluster => customCluster

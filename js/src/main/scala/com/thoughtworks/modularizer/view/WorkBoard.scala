@@ -26,14 +26,15 @@ object WorkBoard {
         val draftClusters = Vars.empty[DraftCluster]
         // TODO: read draftClusters from saved files
         val clusteringReport = Binding {
-          ClusteringReport(graph, rule.bind)
+          new ClusteringReport(graph, rule.bind)
         }
 
         val ruleEditor = new RuleEditor(draftClusters, clusteringReport)
+        val summaryDiagram = new SummaryDiagram(graph, rule, clusteringReport)
 
         <div class="d-flex container-fluid flex-row">
           { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
-          { SummaryDiagram.render(graph, clusteringReport).bind }
+          { summaryDiagram.view.bind }
           { ruleEditor.view.bind }
         </div>
     }

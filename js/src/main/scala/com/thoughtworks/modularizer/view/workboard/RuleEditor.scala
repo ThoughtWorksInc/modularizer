@@ -16,14 +16,14 @@ import scala.scalajs.js.UndefOr
 class RuleEditor(draftClusters: Vars[DraftCluster], clusteringReport: Binding[ClusteringReport]) {
   private val facadeCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
     val facadeNodes = clusteringReport.map { report: ClusteringReport =>
-      (report.clusteringGraph.children("source"): UndefOr[js.Array[String]]).getOrElse(js.Array())
+      (report.compoundGraph.children("source"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
     new BuiltInClusterCard(facadeNodes, "Facades", FacadeColorClass)
   }
 
   private val utilityCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
     val utilityNodes = clusteringReport.map { report: ClusteringReport =>
-      (report.clusteringGraph.children("sink"): UndefOr[js.Array[String]]).getOrElse(js.Array())
+      (report.compoundGraph.children("sink"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
     new BuiltInClusterCard(utilityNodes, "Utilities", UtilityColorClass)
   }
@@ -31,11 +31,11 @@ class RuleEditor(draftClusters: Vars[DraftCluster], clusteringReport: Binding[Cl
   private val unassignedCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
     val unassignedNodes = clusteringReport.map { report: ClusteringReport =>
       def isUnassigned(nodeId: String) = {
-        (report.clusteringGraph.children(nodeId): UndefOr[js.Array[String]])
-          .fold(true)(_.isEmpty) && report.clusteringGraph.parent(nodeId).isEmpty
+        (report.compoundGraph.children(nodeId): UndefOr[js.Array[String]])
+          .fold(true)(_.isEmpty) && report.compoundGraph.parent(nodeId).isEmpty
       }
       for {
-        nodeId <- report.clusteringGraph.nodes()
+        nodeId <- report.compoundGraph.nodes()
         if isUnassigned(nodeId)
       } yield nodeId
     }

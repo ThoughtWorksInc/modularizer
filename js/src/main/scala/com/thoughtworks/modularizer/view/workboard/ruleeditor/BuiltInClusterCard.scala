@@ -1,11 +1,9 @@
 package com.thoughtworks.modularizer.view.workboard.ruleeditor
 
 import com.thoughtworks.binding.bindable._
-import com.thoughtworks.binding.{Binding, LatestEvent, dom}
+import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.model.DraftCluster.ClusterColor
 import org.scalajs.dom._
-
-import scala.scalajs.js
 
 /**
   * @author 杨博 (Yang Bo)
@@ -41,4 +39,5 @@ class BuiltInClusterCard[Items: BindableSeq.Lt[?, String]](items: Items,
       </div>
     </div>
   }
+
 }
