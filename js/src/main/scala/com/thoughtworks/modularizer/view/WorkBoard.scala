@@ -30,9 +30,9 @@ object WorkBoard {
         }
 
         val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
-        val summaryDiagram = new SummaryDiagram(graph, rule, clusteringReport)
+        val summaryDiagram = new SummaryDiagram(graph, draftClusters, rule, clusteringReport)
 
-        <div class="d-flex container-fluid flex-row">
+        <div class="d-flex container-fluid flex-row" style:height="100%">
           { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
           { summaryDiagram.view.bind }
           { ruleEditor.view.bind }

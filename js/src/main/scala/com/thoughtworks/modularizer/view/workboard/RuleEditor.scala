@@ -18,14 +18,14 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
                  clusteringReport: Binding[ClusteringReport]) {
   private val facadeCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
     val facadeNodes = clusteringReport.map { report: ClusteringReport =>
-      (report.compoundGraph.children("source"): UndefOr[js.Array[String]]).getOrElse(js.Array())
+      (report.compoundGraph.children("Facades"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
     new BuiltInClusterCard(facadeNodes, "Facades", FacadeColorClass)
   }
 
   private val utilityCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
     val utilityNodes = clusteringReport.map { report: ClusteringReport =>
-      (report.compoundGraph.children("sink"): UndefOr[js.Array[String]]).getOrElse(js.Array())
+      (report.compoundGraph.children("Utilities"): UndefOr[js.Array[String]]).getOrElse(js.Array())
     }
     new BuiltInClusterCard(utilityNodes, "Utilities", UtilityColorClass)
   }
@@ -59,7 +59,7 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
     ).flatMap(identity)
 
   @dom
-  val view: Binding[Node] = <div class="flex-shrink-1 col-auto">
+  val view: Binding[Node] = <div class="flex-shrink-1 col-4" style:overflowY="auto">
     <form class="m-2">
       <div class="input-group">
         {
@@ -91,7 +91,7 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
                   .groupBy(_.color.value)
                   .mapValues(_.size)
                   .withDefaultValue(0)
-              draftClusters.value += DraftCluster(Var(clusterName.value), Vars.empty, Var(nextColor.value))
+              draftClusters.value.append(DraftCluster(Var(clusterName.value), Vars.empty, Var(nextColor.value)))
               clusterName.value = ""
             }>
               <span title="Add" class="fas fa-folder-plus"></span>

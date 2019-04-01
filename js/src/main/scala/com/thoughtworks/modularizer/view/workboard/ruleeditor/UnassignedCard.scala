@@ -31,15 +31,6 @@ class UnassignedCard[Items: BindableSeq.Lt[?, String]](items: Items,
           >Built-in Cluster</label>
         </div>
         <input type="text" readOnly="readOnly" class="form-control" value="Unassigned"/>
-        <div class="input-group-append">
-          <button
-            type="button"
-            class="btn btn-primary"
-            onclick={ _: Event=>
-              rule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
-            }
-          ><span class="fas fa-sync"></span></button>
-        </div>
       </div>
       <div class="card-body">
         <details id="unlockedDetails">

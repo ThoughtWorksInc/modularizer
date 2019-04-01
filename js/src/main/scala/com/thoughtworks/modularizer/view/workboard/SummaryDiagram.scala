@@ -1,10 +1,10 @@
 package com.thoughtworks.modularizer.view.workboard
 import com.thoughtworks.binding.Binding._
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule}
+import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster}
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.Node
-import org.scalajs.dom.window
+import org.scalajs.dom.{Event, window}
 import typings.d3DashSelectionLib.d3DashSelectionMod.{BaseType, Selection}
 import typings.d3Lib.d3Mod
 import typings.dagreDashD3Lib.dagreDashD3Mod
@@ -12,6 +12,8 @@ import typings.dagreLib.Anon_Compound
 import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
 import typings.dagreLib.dagreMod.{GraphLabel, Label}
 import typings.graphlibLib.graphlibMod.{Graph, algNs}
+
+import scala.collection.immutable
 
 private object SummaryDiagram {
   final class ClusterMountPoint(graphD3: GraphD3, cluster: Binding[String]) extends SingleMountPoint[String](cluster) {
@@ -39,6 +41,7 @@ private object SummaryDiagram {
   * @author 杨博 (Yang Bo)
   */
 class SummaryDiagram(simpleGraph: Graph,
+                     draftClusters: Vars[DraftCluster],
                      clusteringRule: Var[ClusteringRule],
                      clusteringReport: Binding[ClusteringReport]) {
 
@@ -58,6 +61,15 @@ class SummaryDiagram(simpleGraph: Graph,
     }
 
     <div class="flex-grow-1 col-auto">
+      <button
+        type="button"
+        class="btn btn-primary position-absolute"
+        style:bottom="2em"
+        style:right="2em"
+        onclick={ _: Event=>
+          clusteringRule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
+        }
+      ><span class="fas fa-sync"></span></button>
       {svgContainer}
     </div>
   }
@@ -78,7 +90,7 @@ class SummaryDiagram(simpleGraph: Graph,
     })
 
     g.setNode(
-      "sink",
+      "Utilities",
       Label(
         StringDictionary(
           "label" -> "Utilities"
@@ -86,7 +98,7 @@ class SummaryDiagram(simpleGraph: Graph,
       )
     )
     g.setNode(
-      "source",
+      "Facades",
       Label(
         StringDictionary(
           "label" -> "Facades"
@@ -118,11 +130,11 @@ class SummaryDiagram(simpleGraph: Graph,
       )
     }
     ClusteringReport
-      .findNearestClusters(report.dependencyPaths, report.clusterIds, "source")
-      .foreach(g.setEdge("source", _))
+      .findNearestClusters(report.dependencyPaths, report.clusterIds :+ "Utilities", "Facades")
+      .foreach(g.setEdge("Facades", _))
     ClusteringReport
-      .findNearestClusters(report.dependentPaths, report.clusterIds, "sink")
-      .foreach(g.setEdge(_, "sink"))
+      .findNearestClusters(report.dependentPaths, report.clusterIds, "Utilities")
+      .foreach(g.setEdge(_, "Utilities"))
 
     for (from <- clusters) {
       val dependencyClusterIds = ClusteringReport.findNearestClusters(report.dependencyPaths, clusters.collect {

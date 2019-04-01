@@ -53,9 +53,9 @@ object DependencyExplorer {
                 (clusteringReport.bind.compoundGraph.parent(nodeId): Any) match {
                   case () =>
                     UnassignedColorClass
-                  case "source" =>
+                  case "Facades" =>
                     FacadeColorClass
-                  case "sink" =>
+                  case "Utilities" =>
                     UtilityColorClass
                   case customCluster: String =>
                     draftClusters.flatMap { draftCluster =>
@@ -79,8 +79,8 @@ object DependencyExplorer {
                     <span class="fas fa-unlock"></span>
                     {
                       clusteringReport.bind.compoundGraph.parent(nodeId).fold("Unassigned") {
-                        case "source" => "Facades"
-                        case "sink" => "Utilities"
+                        case "Facades" => "Facades"
+                        case "Utilities" => "Utilities"
                         case customCluster => customCluster
                       }
                     }
@@ -252,31 +252,31 @@ object DependencyExplorer {
              clusteringReport: Binding[ClusteringReport],
              rule: Var[ClusteringRule],
              selectedNodeIds: BindingSeq[String]): Binding[Node] =
-    <div class="flex-shrink-1 col-auto" style:minWidth="0">{
-    val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Root)
-    <div class="card">
-      <ul class="nav nav-tabs bg-light sticky-top">
-        { DependencyExplorerTab.Root.navItem(currentTab).bind }
-        { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
-        { DependencyExplorerTab.Selection.navItem(currentTab).bind }
-      </ul>
-      <div class="card-body">{
-        currentTab.bind match {
-          case DependencyExplorerTab.Root =>
-            Constants(graph.sources(): _*).flatMapBinding { nodeId =>
-              neighborList(graph, clusteringReport, nodeId, draftClusters)
-            }
-          case DependencyExplorerTab.Leaf =>
-            Constants(graph.sinks(): _*).flatMapBinding { nodeId =>
-              neighborList(graph, clusteringReport, nodeId, draftClusters)
-            }
-          case DependencyExplorerTab.Selection =>
-            selectedNodeIds.flatMapBinding { nodeId =>
-              neighborList(graph, clusteringReport, nodeId, draftClusters)
-            }
-        }
-      }</div>
-    </div>
-  }</div>
+    <div class="flex-shrink-1 col-4" style:minWidth="0" style:overflowY="auto">{
+      val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Root)
+      <div class="card">
+        <ul class="nav nav-tabs bg-light sticky-top">
+          { DependencyExplorerTab.Root.navItem(currentTab).bind }
+          { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
+          { DependencyExplorerTab.Selection.navItem(currentTab).bind }
+        </ul>
+        <div class="card-body">{
+          currentTab.bind match {
+            case DependencyExplorerTab.Root =>
+              Constants(graph.sources(): _*).flatMapBinding { nodeId =>
+                neighborList(graph, clusteringReport, nodeId, draftClusters)
+              }
+            case DependencyExplorerTab.Leaf =>
+              Constants(graph.sinks(): _*).flatMapBinding { nodeId =>
+                neighborList(graph, clusteringReport, nodeId, draftClusters)
+              }
+            case DependencyExplorerTab.Selection =>
+              selectedNodeIds.flatMapBinding { nodeId =>
+                neighborList(graph, clusteringReport, nodeId, draftClusters)
+              }
+          }
+        }</div>
+      </div>
+    }</div>
 
 }

@@ -3,7 +3,9 @@
 //@import "lib/bootstrap/scss/mixins";
 
 
-
+body {
+  height: 100vh;
+}
 
 .node rect {
   stroke: #333;

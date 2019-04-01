@@ -43,44 +43,51 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
 
   private def notAssignedToCluster(currentNodeId: String) = js.isUndefined(compoundGraph.parent(currentNodeId))
 
-  /*
+  {
+    val priorities = clusterIds.view.zipWithIndex.toMap
+    /*
     1. 如果只直接依赖一个cluster，那么属于这个cluster
     2. 如果只被一个cluster直接依赖，那么属于这个cluster
     3. 如果是不被任何cluster依赖，放入 Source 包
     4. 如果是不依赖任何cluster，放入 Sink 包
     5. 否则不放入任何cluster
-   */
-  for (currentNodeId <- compoundGraph.nodes()) {
-    if (notCluster(currentNodeId) && notAssignedToCluster(currentNodeId)) {
-      findSingleNearestCluster(dependentPaths, clusterIds, currentNodeId) match {
-        case NearestCluster.One(clusterId) =>
-          compoundGraph.setParent(currentNodeId, clusterId)
-        case NearestCluster.Zero =>
-          findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
-            case NearestCluster.One(clusterId) =>
-              compoundGraph.setParent(currentNodeId, clusterId)
-            case NearestCluster.Zero =>
-              compoundGraph.setParent(currentNodeId, "source")
-            case NearestCluster.Multiple =>
-              compoundGraph.setParent(currentNodeId, "sink")
-          }
-        case NearestCluster.Multiple =>
-          findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
-            case NearestCluster.One(clusterId) =>
-              compoundGraph.setParent(currentNodeId, clusterId)
-            case NearestCluster.Zero =>
-              compoundGraph.setParent(currentNodeId, "source")
-            case NearestCluster.Multiple =>
-          }
+     */
+    for (currentNodeId <- compoundGraph.nodes()) {
+      if (notCluster(currentNodeId) && notAssignedToCluster(currentNodeId)) {
+        findSingleNearestCluster(dependentPaths, clusterIds, currentNodeId) match {
+          case NearestCluster.One(clusterId) =>
+            findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
+              case NearestCluster.One(clusterId2) =>
+                compoundGraph.setParent(currentNodeId, js.Array(clusterId, clusterId2).minBy(priorities))
+              case NearestCluster.Zero | NearestCluster.Multiple =>
+                compoundGraph.setParent(currentNodeId, clusterId)
+            }
+          case NearestCluster.Zero =>
+            findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
+              case NearestCluster.One(clusterId) =>
+                compoundGraph.setParent(currentNodeId, clusterId)
+              case NearestCluster.Zero =>
+                compoundGraph.setParent(currentNodeId, "Facades")
+              case NearestCluster.Multiple =>
+                compoundGraph.setParent(currentNodeId, "Utilities")
+            }
+          case NearestCluster.Multiple =>
+            findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
+              case NearestCluster.One(clusterId) =>
+                compoundGraph.setParent(currentNodeId, clusterId)
+              case NearestCluster.Zero =>
+                compoundGraph.setParent(currentNodeId, "Facades")
+              case NearestCluster.Multiple =>
+            }
+        }
       }
     }
   }
+  dependencyPaths("Facades") =
+    algNs.dijkstra(compoundGraph, "Facades", Function.const(1.0), lookupDependencies(compoundGraph, _))
 
-  dependencyPaths("source") =
-    algNs.dijkstra(compoundGraph, "source", Function.const(1.0), lookupDependencies(compoundGraph, _))
-
-  dependentPaths("sink") =
-    algNs.dijkstra(compoundGraph, "sink", Function.const(1.0), lookupDependents(compoundGraph, _))
+  dependentPaths("Utilities") =
+    algNs.dijkstra(compoundGraph, "Utilities", Function.const(1.0), lookupDependents(compoundGraph, _))
 
 }
 
