@@ -29,7 +29,7 @@ object WorkBoard {
           new ClusteringReport(graph, rule.bind)
         }
 
-        val ruleEditor = new RuleEditor(draftClusters, clusteringReport)
+        val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
         val summaryDiagram = new SummaryDiagram(graph, rule, clusteringReport)
 
         <div class="d-flex container-fluid flex-row">

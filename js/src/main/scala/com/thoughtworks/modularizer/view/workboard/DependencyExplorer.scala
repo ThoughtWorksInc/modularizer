@@ -258,31 +258,7 @@ object DependencyExplorer {
       <ul class="nav nav-tabs bg-light sticky-top">
         { DependencyExplorerTab.Root.navItem(currentTab).bind }
         { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
-
-        <li class="nav-item">
-          <a
-            href=""
-            onclick={ event: Event =>
-              event.preventDefault()
-              currentTab.value = DependencyExplorerTab.Selection
-            }
-            classMap={
-              Map(
-                "active" -> (currentTab.bind == DependencyExplorerTab.Selection),
-                "nav-link" -> true
-              )
-            }
-          >
-            { DependencyExplorerTab.Selection.toString }
-            <button
-              type="button"
-              class="badge badge-secondary"
-              onclick={ _: Event=>
-                rule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
-              }
-            ><span class="fas fa-sync"></span></button>
-          </a>
-        </li>
+        { DependencyExplorerTab.Selection.navItem(currentTab).bind }
       </ul>
       <div class="card-body">{
         currentTab.bind match {

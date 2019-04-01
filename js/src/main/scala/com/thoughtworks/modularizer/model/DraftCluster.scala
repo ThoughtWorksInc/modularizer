@@ -4,6 +4,8 @@ import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.modularizer.model.DraftCluster.ClusterColor
 
 import scala.collection.immutable
+import scala.util.Random.shuffle
+
 final case class DraftCluster(name: Var[String], nodeIds: Vars[String], color: Var[ClusterColor]) {
   def buildCluster: ClusteringRule.Cluster = {
     ClusteringRule.Cluster(name.value, nodeIds.value.to[immutable.Seq])
@@ -16,7 +18,7 @@ object DraftCluster {
     val backgroundColor = s"var(--$backgroundColorName)"
   }
 
-  final val CustomClusterColors = scala.util.Random.shuffle(
+  final val CustomClusterColors = shuffle(
     Seq(
       ClusterColor("light", "blue"),
       ClusterColor("light", "indigo"),

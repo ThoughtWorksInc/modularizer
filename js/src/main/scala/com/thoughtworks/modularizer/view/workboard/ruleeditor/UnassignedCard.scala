@@ -1,33 +1,45 @@
 package com.thoughtworks.modularizer.view.workboard.ruleeditor
 
+import com.thoughtworks.binding.Binding.{BindingSeq, Var}
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, dom}
+import com.thoughtworks.modularizer.model.{ClusteringRule, DraftCluster}
 import com.thoughtworks.modularizer.model.DraftCluster.ClusterColor
 import org.scalajs.dom._
+
+import scala.collection.immutable
 
 /**
   * @author 杨博 (Yang Bo)
   */
-class BuiltInClusterCard[Items: BindableSeq.Lt[?, String]](items: Items,
-                                                           clusterName: String,
-                                                           clusterColor: ClusterColor) {
+class UnassignedCard[Items: BindableSeq.Lt[?, String]](items: Items,
+                                                       draftClusters: BindingSeq[DraftCluster],
+                                                       rule: Var[ClusteringRule]) {
 
   private val selectUnlockedNodes = new MultipleSelect(items.bindSeq)
 
   def selectedUnlockedNodeIds: Binding.BindingSeq[String] = selectUnlockedNodes.selectedNodeIds
 
   @dom val view: Binding[Node] = {
-    <div class="card m-2" draggable={true}>
+    <div class="card m-2">
       <div class="input-group sticky-top">
         <div class="input-group-prepend">
           <label
             class="input-group-text"
-            style:backgroundColor={clusterColor.backgroundColor}
-            style:color={ clusterColor.textColor }
-            style:cursor="move"
+            style:backgroundColor={ DraftCluster.UnassignedColorClass.backgroundColor}
+            style:color={ DraftCluster.UnassignedColorClass.textColor }
           >Built-in Cluster</label>
         </div>
-        <input type="text" readOnly="readOnly" class="form-control" value={ clusterName }/>
+        <input type="text" readOnly="readOnly" class="form-control" value="Unassigned"/>
+        <div class="input-group-append">
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick={ _: Event=>
+              rule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
+            }
+          ><span class="fas fa-sync"></span></button>
+        </div>
       </div>
       <div class="card-body">
         <details id="unlockedDetails">

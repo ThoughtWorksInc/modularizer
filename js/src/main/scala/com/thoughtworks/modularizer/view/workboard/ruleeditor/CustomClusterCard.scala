@@ -31,10 +31,15 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
 
   @dom
   val view: Binding[Node] = {
-    <div class="card m-2">
+    <div class="card m-2" draggable="true">
       <div class="input-group sticky-top">
         <div class="input-group-prepend">
-          <label class="input-group-text" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>Cluster</label>
+          <label
+            class="input-group-text"
+            style:backgroundColor={draftCluster.color.bind.backgroundColor}
+            style:color={draftCluster.color.bind.textColor}
+            style:cursor="move"
+          >Cluster</label>
         </div>
         <input
           id="clusterName"
@@ -48,7 +53,9 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
         <div class="input-group-append">
           <button type="button" class="btn btn-secondary" onclick={ _: Event =>
             draftClusters.value -= draftCluster
-          }>Delete</button>
+          }>
+            <span title="Delete" class="fas fa-folder-minus"></span>
+          </button>
         </div>
       </div>
       <div class="card-body">
@@ -61,9 +68,11 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
             }</span>
             {
               if (selectLocked.selectedNodeIds.nonEmpty.bind) {
-                <button type="button" class="float-right badge badge-danger" onclick={ _: Event =>
+                <button type="button" class="float-right badge badge-secondary" onclick={ _: Event =>
                   draftCluster.nodeIds.value --= selectLocked.selectedNodeIds.value
-                }>Remove Selected</button>
+                }>
+                  <span title="Remove Selected" class="fas fa-trash"></span>
+                </button>
               } else {
                 <!-- Hidden Remove Button -->
               }
