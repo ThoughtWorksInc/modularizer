@@ -37,5 +37,3 @@ scalaJSUseMainModuleInitializer := true
 libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test
 
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
-
-fastOptJS / scalaJSLinkerConfig := scalaJSLinkerConfig.value.withOptimizer(false)

@@ -11,7 +11,7 @@ import typings.dagreDashD3Lib.dagreDashD3Mod
 import typings.dagreLib.Anon_Compound
 import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
 import typings.dagreLib.dagreMod.{GraphLabel, Label}
-import typings.graphlibLib.graphlibMod.Graph
+import typings.graphlibLib.graphlibMod.{Graph, algNs}
 
 private object SummaryDiagram {
   final class ClusterMountPoint(graphD3: GraphD3, cluster: Binding[String]) extends SingleMountPoint[String](cluster) {
@@ -45,8 +45,13 @@ class SummaryDiagram(simpleGraph: Graph,
   @dom
   val view: Binding[Node] = {
     val render = dagreDashD3Mod.^.render.newInstance0()
-    val svgContainer = <div></div>
-    val svgSelection = d3Mod.^.select(svgContainer).append("svg").asInstanceOf[Selection[_, _, BaseType, _]]
+    val svgContainer = <div class="svg-container"></div>
+    val svgSelection = d3Mod.^.select(svgContainer)
+      .append("svg")
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 400 600")
+      .classed("svg-content-responsive", true)
+      .asInstanceOf[Selection[_, _, BaseType, _]]
     val g = buildGraphD3.bind
     window.requestAnimationFrame { _ =>
       render(svgSelection, g)
@@ -56,63 +61,6 @@ class SummaryDiagram(simpleGraph: Graph,
       {svgContainer}
     </div>
   }
-
-//    val graph: Graph = new Graph(new Anon_Compound {
-//      compound = true
-//    })
-//
-//    graph
-//      .setGraph(new GraphLabel {
-//        ranker = "tight-tree"
-//      })
-//      .setDefaultEdgeLabel { edge: Edge =>
-//        Label(StringDictionary())
-//      }
-//      .setNode("node-1",
-//               Label(
-//                 StringDictionary(
-//                   "label" -> "Node 1"
-//                 )
-//               ))
-//      .setNode("node-2",
-//               Label(
-//                 StringDictionary(
-//                   "label" -> "Node 2"
-//                 )
-//               ))
-//      .setNode("node-3",
-//               Label(
-//                 StringDictionary(
-//                   "label" -> "Node 3"
-//                 )
-//               ))
-//      .setEdge("node-1", "node-2")
-//      .setEdge("node-1", "node-3")
-//
-//
-//  @dom
-//  def htmlTemplate(graph: Graph) = {
-//    val render = dagreDashD3Mod.^.render.newInstance0()
-//    val svgContainer = <div></div>
-//    val svgSelection = d3Mod.^.select(svgContainer).append("svg").asInstanceOf[Selection[_, _, BaseType, _]]
-//    render(svgSelection, graph)
-//
-//    <div>
-//      {svgContainer}
-//      <button type="button" onclick={ event: Any =>
-//        graph
-//        .setNode("node-4",
-//                 Label(
-//                   StringDictionary(
-//                     "label" -> "Node 4"
-//                   )
-//                 ))
-//        .setEdge("node-4", "node-1")
-//
-//        render(svgSelection, graph)
-//      }>Add Node</button>
-//    </div>
-//  }
 
   def buildGraphD3: Binding[GraphD3] = Binding {
     val report = clusteringReport.bind
@@ -129,6 +77,22 @@ class SummaryDiagram(simpleGraph: Graph,
 //      compound = true
     })
 
+    g.setNode(
+      "sink",
+      Label(
+        StringDictionary(
+          "label" -> "Utilities"
+        )
+      )
+    )
+    g.setNode(
+      "source",
+      Label(
+        StringDictionary(
+          "label" -> "Facades"
+        )
+      )
+    )
     for (cluster <- clusters) {
       g.setNode(
         cluster.parent,
@@ -153,6 +117,13 @@ class SummaryDiagram(simpleGraph: Graph,
         // TODO:
       )
     }
+    ClusteringReport
+      .findNearestClusters(report.dependencyPaths, report.clusterIds, "source")
+      .foreach(g.setEdge("source", _))
+    ClusteringReport
+      .findNearestClusters(report.dependentPaths, report.clusterIds, "sink")
+      .foreach(g.setEdge(_, "sink"))
+
     for (from <- clusters) {
       val dependencyClusterIds = ClusteringReport.findNearestClusters(report.dependencyPaths, clusters.collect {
         case to if to.parent != from.parent =>
@@ -163,6 +134,7 @@ class SummaryDiagram(simpleGraph: Graph,
         g.setEdge(from.parent, dependencyClusterId)
       }
     }
+
 //
 //    for (draftCluster <- draftClusters) {
 //      new ClusterMountPoint(g, draftCluster.name).bind

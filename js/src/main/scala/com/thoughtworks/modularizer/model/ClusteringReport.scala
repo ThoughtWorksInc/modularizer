@@ -39,13 +39,13 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
   val dependencyPaths = calculateDependencies(compoundGraph, clusterIds)
   val dependentPaths = calculateDependents(compoundGraph, clusterIds)
 
-  def notCluster(node: String) = compoundGraph.children(node).isEmpty
+  private def notCluster(node: String) = compoundGraph.children(node).isEmpty
 
-  def notAssignedToCluster(currentNodeId: String) = js.isUndefined(compoundGraph.parent(currentNodeId))
+  private def notAssignedToCluster(currentNodeId: String) = js.isUndefined(compoundGraph.parent(currentNodeId))
 
   /*
-    1. 如果只被一个cluster直接依赖，那么属于这个cluster
-    2. 如果只直接依赖一个cluster，那么属于这个cluster
+    1. 如果只直接依赖一个cluster，那么属于这个cluster
+    2. 如果只被一个cluster直接依赖，那么属于这个cluster
     3. 如果是不被任何cluster依赖，放入 Source 包
     4. 如果是不依赖任何cluster，放入 Sink 包
     5. 否则不放入任何cluster
@@ -62,19 +62,26 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
             case NearestCluster.Zero =>
               compoundGraph.setParent(currentNodeId, "source")
             case NearestCluster.Multiple =>
-              compoundGraph.setParent(currentNodeId, "source")
+              compoundGraph.setParent(currentNodeId, "sink")
           }
         case NearestCluster.Multiple =>
           findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
             case NearestCluster.One(clusterId) =>
               compoundGraph.setParent(currentNodeId, clusterId)
             case NearestCluster.Zero =>
-              compoundGraph.setParent(currentNodeId, "sink")
+              compoundGraph.setParent(currentNodeId, "source")
             case NearestCluster.Multiple =>
           }
       }
     }
   }
+
+  dependencyPaths("source") =
+    algNs.dijkstra(compoundGraph, "source", Function.const(1.0), lookupDependencies(compoundGraph, _))
+
+  dependentPaths("sink") =
+    algNs.dijkstra(compoundGraph, "sink", Function.const(1.0), lookupDependents(compoundGraph, _))
+
 }
 
 object ClusteringReport {
@@ -183,7 +190,7 @@ object ClusteringReport {
             result -= existingClusterId
             result += clusterId
           case None =>
-            if (result.forall(isReachable(_, clusterId))) {
+            if (!result.exists(isReachable(_, clusterId))) {
               result += clusterId
             }
         }
@@ -233,23 +240,23 @@ object ClusteringReport {
       graph: Graph,
       clusterIds: js.Array[String]
   ): StringDictionary[StringDictionary[Path]] = {
-    def lookupEdges(currentNodeId: String): js.Array[Edge] = {
-      val childrenEdges = childrenAsEdges(graph, currentNodeId)
-      val parentEdges = parentAsEdges(graph, currentNodeId)
-      val inEdges = graph.inEdges(currentNodeId).getOrElse(EmptyArray)
-      childrenEdges.concat(parentEdges, inEdges)
-    }
 
     StringDictionary(clusterIds.map { clusterId: String =>
       clusterId -> algNs.dijkstra(
         graph,
         clusterId,
         Function.const(1.0),
-        lookupEdges
+        lookupDependents(graph, _)
       )
     }: _*)
   }
 
+  def lookupDependents(graph: Graph, currentNodeId: String): js.Array[Edge] = {
+    val childrenEdges = childrenAsEdges(graph, currentNodeId)
+    val parentEdges = parentAsEdges(graph, currentNodeId)
+    val inEdges = graph.inEdges(currentNodeId).getOrElse(EmptyArray)
+    childrenEdges.concat(parentEdges, inEdges)
+  }
   private def parentAsEdges(graph: Graph, currentNodeId: String): js.Array[Edge] = {
     val nullableParent = graph.parent(currentNodeId)
     if (js.isUndefined(nullableParent)) {
@@ -314,21 +321,22 @@ object ClusteringReport {
       graph: Graph,
       clusterIds: js.Array[String]
   ): StringDictionary[StringDictionary[Path]] = {
-    def lookupEdges(currentNodeId: String): js.Array[Edge] = {
-      val childrenEdges = childrenAsEdges(graph, currentNodeId)
-      val parentEdges = parentAsEdges(graph, currentNodeId)
-      val outEdges = graph.outEdges(currentNodeId).getOrElse(EmptyArray)
-      childrenEdges.concat(parentEdges, outEdges)
-    }
 
     StringDictionary(clusterIds.map { clusterId: String =>
       clusterId -> algNs.dijkstra(
         graph,
         clusterId,
         Function.const(1.0),
-        lookupEdges
+        lookupDependencies(graph, _)
       )
     }: _*)
+  }
+
+  def lookupDependencies(graph: Graph, currentNodeId: String): js.Array[Edge] = {
+    val childrenEdges = childrenAsEdges(graph, currentNodeId)
+    val parentEdges = parentAsEdges(graph, currentNodeId)
+    val outEdges = graph.outEdges(currentNodeId).getOrElse(EmptyArray)
+    childrenEdges.concat(parentEdges, outEdges)
   }
 
   private[modularizer] sealed trait NearestCluster
