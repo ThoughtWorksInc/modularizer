@@ -5,7 +5,7 @@ import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import com.thoughtworks.modularizer.model.{ClusteringReport, DraftCluster}
 import org.scalajs.dom._
-import org.scalajs.dom.raw.Event
+import org.scalajs.dom.raw.{DragEffect, Event}
 
 import scala.scalajs.js
 import scala.scalajs.js.UndefOr
@@ -31,7 +31,27 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
 
   @dom
   val view: Binding[Node] = {
-    <div class="card m-2" draggable="true">
+    <div
+      class="card m-2"
+      draggable="true"
+      ondragstart={
+        val clusterId = draftCluster.name.bind;
+        { event: DragEvent =>
+          event.dataTransfer.setData("cluster id", clusterId)
+        }
+      }
+      ondragover={ event: DragEvent =>
+        event.preventDefault()
+        event.dataTransfer.dropEffect = DragEffect.Move
+      }
+      ondrop={ event: DragEvent =>
+        val fromClusterId = event.dataTransfer.getData("cluster id")
+        val sourceIndex = draftClusters.value.indexWhere(_.name.value == fromClusterId)
+        val targetIndex = draftClusters.value.indexOf(draftCluster)
+        val sourceCluster = draftClusters.value.remove(sourceIndex)
+        draftClusters.value.insert(targetIndex, sourceCluster)
+      }
+    >
       <div class="input-group sticky-top">
         <div class="input-group-prepend">
           <label

@@ -60,9 +60,6 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
 
   @dom
   val view: Binding[Node] = <div class="flex-shrink-1 col-auto">
-    { facadeCard.view.bind }
-    { utilityCard.view.bind }
-    { customClusterCards.mapBinding(_.view) }
     <form class="m-2">
       <div class="input-group">
         {
@@ -103,6 +100,9 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
         }
       </div>
     </form>
+    { customClusterCards.mapBinding(_.view) }
+    { facadeCard.view.bind }
+    { utilityCard.view.bind }
     { unassignedCard.view.bind }
   </div>
 }
