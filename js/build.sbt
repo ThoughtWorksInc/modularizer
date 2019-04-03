@@ -9,7 +9,7 @@ webpackBundlingMode := BundlingMode.LibraryOnly()
 
 libraryDependencies += "com.thoughtworks.binding" %%% "dom" % "11.7.0-127-a9f1e4dd"
 
-libraryDependencies += "com.thoughtworks.binding" %%% "jsonhashroute" % "0.1.0"
+libraryDependencies += "com.thoughtworks.binding" %%% "jsonhashroute" % "0.2.0"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.1.0-5-8a619f31"
 
