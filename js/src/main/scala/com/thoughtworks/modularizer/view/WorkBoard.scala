@@ -16,7 +16,10 @@ object WorkBoard {
     graphOption.bind match {
       case None =>
         <div class="alert alert-warning" data:role="alert">
-          No graph found. You may want to import a <kbd>jdeps</kbd> report first.
+          <p>
+            No graph found. You may want to import a <kbd>jdeps</kbd> report first.
+          </p>
+          <hr/>
           <button type="button" class="btn btn-primary" onclick={ _: Event =>
             pageState.value = PageState.ImportJdepsDotFile
           }>Import</button>
