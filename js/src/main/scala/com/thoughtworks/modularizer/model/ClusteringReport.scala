@@ -58,7 +58,7 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
           case NearestCluster.One(clusterId) =>
             findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
               case NearestCluster.One(clusterId2) =>
-                compoundGraph.setParent(currentNodeId, js.Array(clusterId, clusterId2).minBy(priorities))
+                compoundGraph.setParent(currentNodeId, js.Array(clusterId, clusterId2).maxBy(priorities))
               case NearestCluster.Zero | NearestCluster.Multiple =>
                 compoundGraph.setParent(currentNodeId, clusterId)
             }
