@@ -13,5 +13,6 @@ class Configuration(arguments: Seq[String]) extends ScallopConf(arguments) {
   val gitUsername = opt[String](noshort = true)
   val gitPassword = opt[String](noshort = true, default = Some(""))
   val numberOfTemporaryGitClones = opt[Int](noshort = true, default = Some(3))
+  val maxRetriesForUploading = opt[Int](noshort = true, default = Some(3))
   verify()
 }
