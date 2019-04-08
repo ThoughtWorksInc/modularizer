@@ -1,10 +1,13 @@
 package com.thoughtworks.modularizer.server
 
-import java.io.{File, IOException}
+import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 
+import com.thoughtworks.modularizer.server.Server.logger
 import com.typesafe.scalalogging.StrictLogging
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.eclipse.jgit.lib.Constants._
 
 import scala.concurrent.ExecutionContext
 
@@ -38,19 +41,27 @@ object GitPool extends StrictLogging {
   }
 
   private def openOrCreate(workTree: File): Git = {
-    logger.info(s"Opening work tree at ${workTree.getAbsoluteFile}")
+    logger.info(s"Opening work tree at ${workTree.getAbsolutePath}")
     try {
       Git.open(workTree)
     } catch {
-      case e: IOException =>
+      case e: RepositoryNotFoundException =>
         logger.info(s"Cannot open $workTree as a work tree. Calling git init for the directory...", e)
-        Git.init().setDirectory(workTree).call()
+        val git = Git.init().setDirectory(workTree).call()
+        git.checkout().setName(MASTER).setOrphan(true).setAllPaths(true).call()
+        logger.info(s"Git repository created at ${git.getRepository.getWorkTree.getAbsolutePath}")
+        git
     }
   }
 }
 
 class GitPool private (private val queue: ArrayBlockingQueue[Git]) extends AnyVal {
   def acquire(): Git = {
+    logger.whenDebugEnabled {
+      if (queue.isEmpty) {
+        logger.debug(s"No available git work tree at the moment. Waiting...")
+      }
+    }
     queue.take()
   }
 }
