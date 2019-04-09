@@ -22,12 +22,12 @@ object PageState {
 
   }
 
-  case object ImportJdepsDotFile extends PageState
+  case object HomePage extends PageState
   final case class WorkBoard(graphState: WorkBoardState) extends PageState
 
   // Workaround for https://github.com/scala/bug/issues/7046
   implicit val readWriter: ReadWriter[PageState] = ReadWriter.merge(
-    macroRW[ImportJdepsDotFile.type],
+    macroRW[HomePage.type],
     macroRW[WorkBoard],
   )
 

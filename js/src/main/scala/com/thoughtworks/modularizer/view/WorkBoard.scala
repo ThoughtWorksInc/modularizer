@@ -21,7 +21,7 @@ object WorkBoard {
           </p>
           <hr/>
           <button type="button" class="btn btn-primary" onclick={ _: Event =>
-            pageState.value = PageState.ImportJdepsDotFile
+            pageState.value = PageState.HomePage
           }>Import</button>
         </div>
       case Some(graph) =>

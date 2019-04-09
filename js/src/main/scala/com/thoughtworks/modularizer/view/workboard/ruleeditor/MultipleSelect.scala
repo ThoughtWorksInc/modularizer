@@ -16,10 +16,12 @@ class MultipleSelect[Items: BindableSeq.Lt[?, String]](val items: Items) {
   @dom
   val view: Binding[HTMLSelectElement] = {
     <select
-      classMap={Map(
-        "custom-select" -> true,
-        "d-none" -> items.bindSeq.isEmpty.bind
-      )}
+      class={
+        s"""
+          custom-select
+          ${if (items.bindSeq.isEmpty.bind) "d-none" else ""}
+        """
+      }
       selectedIndex={-1}
       multiple="multiple"
       size={items.bindSeq.length.bind}

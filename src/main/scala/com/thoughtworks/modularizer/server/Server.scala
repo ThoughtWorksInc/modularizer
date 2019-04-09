@@ -69,7 +69,7 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
         pathPrefix("git-storages") {
           pathPrefix(Segment) { branch: String =>
             pathSuffix(Segment) { fileName: String =>
-              path(Segments ~ Slash) { directorySegments: List[String] =>
+              rawPathPrefix((Slash ~ Segment).repeat(0, 128)) { directorySegments: List[String] =>
                 logger.debug(s"Access $fileName to $directorySegments on branch $branch")
                 val git = !Using(gitPool.acquire())
                 val workTreePath = git.getRepository.getWorkTree.toPath
@@ -107,7 +107,8 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
                 get {
                   try {
                     val ref = forceCheckoutBranch()
-                    conditional(EntityTag(ref.getObjectId.name)) {
+                    val etag = EntityTag(ref.getObjectId.name)
+                    conditional(etag) {
                       mapSettings(_.withFileGetConditional(false)) {
                         getFromFile(fullPath.toFile)
                       }
@@ -172,36 +173,50 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
                       }
                     }
 
+                    def create() = {
+                      upload { (commit, pushResults) =>
+                        if (pushResults.exists(_.getRemoteUpdates.asScala.exists(_.getStatus != Status.OK))) {
+                          complete(Conflict)
+                        } else {
+                          respondWithHeader(ETag(commit.getId.name)) {
+                            complete(Created)
+                          }
+                        }
+                      }
+                    }
+
+                    def modify() = {
+                      upload { (commit, pushResults) =>
+                        if (pushResults.exists(_.getRemoteUpdates.asScala.exists(_.getStatus != Status.OK))) {
+                          complete(PreconditionFailed)
+                        } else {
+                          respondWithHeader(ETag(commit.getId.name)) {
+                            complete(NoContent)
+                          }
+                        }
+                      }
+                    }
+
                     oldRef.getObjectId match {
                       case null =>
                         if (request.header[`If-Match`].isDefined) {
                           complete(PreconditionFailed)
                         } else {
-                          upload { (commit, pushResults) =>
-                            if (pushResults.exists(_.getRemoteUpdates.asScala.exists(_.getStatus != Status.OK))) {
-                              complete(Conflict)
-                            } else {
-                              respondWithHeader(ETag(commit.getId.name)) {
-                                complete(Created)
-                              }
-                            }
-                          }
+                          create()
                         }
                       case oldSha1 =>
-                        if (request.header[`If-Match`].isDefined) {
-                          conditional(EntityTag(oldSha1.name): @ ?) {
-                            upload { (commit, pushResults) =>
-                              if (pushResults.exists(_.getRemoteUpdates.asScala.exists(_.getStatus != Status.OK))) {
-                                complete(PreconditionFailed)
-                              } else {
-                                respondWithHeader(ETag(commit.getId.name)) {
-                                  complete(NoContent)
-                                }
-                              }
+                        if (Files.exists(fullPath)) {
+                          if (request.header[`If-Match`].isDefined) {
+                            conditional(EntityTag(oldSha1.name)) {
+                              modify()
                             }
+                          } else {
+                            complete(PreconditionRequired)
                           }
                         } else {
-                          complete(PreconditionRequired)
+                          conditional(EntityTag(oldSha1.name)) {
+                            create()
+                          }
                         }
                     }
                   }

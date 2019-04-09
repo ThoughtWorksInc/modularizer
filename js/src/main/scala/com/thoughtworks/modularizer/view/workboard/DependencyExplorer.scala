@@ -229,11 +229,11 @@ object DependencyExplorer {
             event.preventDefault()
             currentTab.value = this
           }
-          classMap={
-            Map(
-              "active" -> (currentTab.bind == this),
-              "nav-link" -> true
-            )
+          class={
+            s"""
+              nav-link
+              ${ if (currentTab.bind == this) "active" else "" }
+            """
           }
         >{ this.toString }</a>
       </li>
@@ -255,7 +255,7 @@ object DependencyExplorer {
     <div class="flex-shrink-1 col-4" style:minWidth="0" style:overflowY="auto">{
       val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Root)
       <div class="card">
-        <ul class="nav nav-tabs bg-light sticky-top">
+        <ul class="nav nav-tabs sticky-top">
           { DependencyExplorerTab.Root.navItem(currentTab).bind }
           { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
           { DependencyExplorerTab.Selection.navItem(currentTab).bind }
