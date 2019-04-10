@@ -1,7 +1,5 @@
 package com.thoughtworks.modularizer.view.homepage.importtab
 
-import com.thoughtworks
-import com.thoughtworks.binding
 import com.thoughtworks.binding.{Binding, FutureBinding, LatestEvent, dom}
 import org.scalajs.dom.ext.{Ajax, AjaxException}
 import org.scalajs.dom.raw._
@@ -33,7 +31,7 @@ class BranchInputGroup {
     }
   }
 
-  private val checkAvailibility: Binding[Option[Try[XMLHttpRequest]]] = Binding {
+  private val checkAvailability: Binding[Option[Try[XMLHttpRequest]]] = Binding {
     uncheckedBranchName.bind match {
       case None => None
       case Some(branch) =>
@@ -49,7 +47,7 @@ class BranchInputGroup {
   }
 
   val branchName = Binding {
-    checkAvailibility.bind match {
+    checkAvailability.bind match {
       case Some(Failure(AjaxException(xhr))) if xhr.status == 404 =>
         uncheckedBranchName.bind
       case _ =>
@@ -68,7 +66,7 @@ class BranchInputGroup {
         element.className = raw"""
           form-control
           ${
-            checkAvailibility.bind match {
+            checkAvailability.bind match {
               case None =>
                 ""
               case Some(Success(xhr)) =>
@@ -91,7 +89,7 @@ class BranchInputGroup {
         The git branch name where this project will store to.
       </small>
       {
-        checkAvailibility.bind match {
+        checkAvailability.bind match {
           case None =>
             <!-- Loading header of graph.json -->
           case Some(Success(xhr)) =>

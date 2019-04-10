@@ -66,7 +66,8 @@ class DotFileInputGroup {
         element
       }
       <small class="form-text text-muted">
-        You can run command-line tool <kbd>jdeps --dot-output</kbd> from OpenJDK to produce the dependency report <code>your.jar.dot</code> for <code>your.jar</code>.
+        You can run command-line tool <kbd>jdeps --dot-output</kbd> from OpenJDK
+        to produce the dependency report <code>your.jar.dot</code> for <code>your.jar</code>.
       </small>
       {
         readerOption.bind match {
