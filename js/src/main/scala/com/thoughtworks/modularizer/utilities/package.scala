@@ -6,7 +6,7 @@ import scala.scalajs.js.{UndefOr, UndefOrOps, |}
 /**
   * @author 杨博 (Yang Bo)
   */
-package object util {
+package object utilities {
 
   implicit final def unitOrOps[A, B](unitOr: Unit | A)(implicit ev: |.Evidence[A, B]): UndefOrOps[B] = {
     new UndefOrOps(unitOr.asInstanceOf[UndefOr[B]])

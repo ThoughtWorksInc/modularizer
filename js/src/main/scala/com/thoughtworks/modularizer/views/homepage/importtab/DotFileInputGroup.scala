@@ -1,4 +1,4 @@
-package com.thoughtworks.modularizer.view.homepage.importtab
+package com.thoughtworks.modularizer.views.homepage.importtab
 
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import org.scalajs.dom.FileReader

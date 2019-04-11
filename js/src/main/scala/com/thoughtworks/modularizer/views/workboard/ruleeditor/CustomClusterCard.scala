@@ -1,9 +1,9 @@
-package com.thoughtworks.modularizer.view.workboard.ruleeditor
+package com.thoughtworks.modularizer.views.workboard.ruleeditor
 
 import com.thoughtworks.binding.Binding.{BindingSeq, Vars}
 import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.modularizer.model.{ClusteringReport, DraftCluster}
+import com.thoughtworks.modularizer.models.{ClusteringReport, DraftCluster}
 import org.scalajs.dom._
 import org.scalajs.dom.raw.{DragEffect, Event}
 

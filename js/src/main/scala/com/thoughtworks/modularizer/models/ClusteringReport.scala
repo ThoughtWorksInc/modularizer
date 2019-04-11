@@ -1,7 +1,7 @@
-package com.thoughtworks.modularizer.model
+package com.thoughtworks.modularizer.models
 
-import com.thoughtworks.modularizer.model.ClusteringRule.Cluster
-import com.thoughtworks.modularizer.util._
+import com.thoughtworks.modularizer.models.ClusteringRule.Cluster
+import com.thoughtworks.modularizer.utilities._
 import org.scalablytyped.runtime.StringDictionary
 import typings.graphlibLib.graphlibMod._
 
@@ -101,7 +101,7 @@ object ClusteringReport {
     *          import scala.scalajs.js
     *          import typings.graphlibLib.graphlibMod._
     *          import org.scalablytyped.runtime.StringDictionary
-    *          import com.thoughtworks.modularizer.model.ClusteringReport._
+    *          import com.thoughtworks.modularizer.models.ClusteringReport._
     *          val paths = StringDictionary(
     *            "A" -> StringDictionary(
     *              "A" -> Path(0.0, null),
@@ -228,7 +228,7 @@ object ClusteringReport {
     *       graph.setParent("G", "cluster G")
     *       graph.setParent("E", "cluster E")
     *
-    *       import com.thoughtworks.modularizer.model.ClusteringReport.calculateDependents
+    *       import com.thoughtworks.modularizer.models.ClusteringReport.calculateDependents
     *       val allPaths = calculateDependents(graph, js.Array("A", "F", "C"))
     *
     *
@@ -310,7 +310,7 @@ object ClusteringReport {
     *       graph.setParent("G", "cluster G")
     *       graph.setParent("E", "cluster E")
     *
-    *       import com.thoughtworks.modularizer.model.ClusteringReport.calculateDependencies
+    *       import com.thoughtworks.modularizer.models.ClusteringReport.calculateDependencies
     *       val allPaths = calculateDependencies(graph, js.Array("A", "F", "G"))
     *
     *

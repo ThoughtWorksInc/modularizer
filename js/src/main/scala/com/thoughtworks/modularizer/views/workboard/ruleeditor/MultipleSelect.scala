@@ -1,6 +1,6 @@
-package com.thoughtworks.modularizer.view.workboard.ruleeditor
+package com.thoughtworks.modularizer.views.workboard.ruleeditor
 
-import com.thoughtworks.modularizer.util._
+import com.thoughtworks.modularizer.utilities._
 import com.thoughtworks.binding.Binding.BindingSeq
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}

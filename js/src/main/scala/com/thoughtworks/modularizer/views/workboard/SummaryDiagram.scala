@@ -1,7 +1,7 @@
-package com.thoughtworks.modularizer.view.workboard
+package com.thoughtworks.modularizer.views.workboard
 import com.thoughtworks.binding.Binding._
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.Node
 import org.scalajs.dom.{Event, window}

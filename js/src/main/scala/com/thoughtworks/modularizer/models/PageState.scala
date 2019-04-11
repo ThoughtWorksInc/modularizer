@@ -1,4 +1,4 @@
-package com.thoughtworks.modularizer.model
+package com.thoughtworks.modularizer.models
 
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.JsonHashRoute

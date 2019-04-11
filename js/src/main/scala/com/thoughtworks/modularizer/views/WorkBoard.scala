@@ -1,9 +1,9 @@
-package com.thoughtworks.modularizer.view
+package com.thoughtworks.modularizer.views
 import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.model.PageState.WorkBoardState
-import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster, PageState}
-import com.thoughtworks.modularizer.view.workboard.{DependencyExplorer, RuleEditor, SummaryDiagram}
+import com.thoughtworks.modularizer.models.PageState.WorkBoardState
+import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster, PageState}
+import com.thoughtworks.modularizer.views.workboard.{DependencyExplorer, RuleEditor, SummaryDiagram}
 import org.scalajs.dom.Event
 import typings.graphlibLib.graphlibMod.Graph
 

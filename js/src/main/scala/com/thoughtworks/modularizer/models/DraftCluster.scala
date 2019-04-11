@@ -1,7 +1,7 @@
-package com.thoughtworks.modularizer.model
+package com.thoughtworks.modularizer.models
 
 import com.thoughtworks.binding.Binding.{Var, Vars}
-import com.thoughtworks.modularizer.model.DraftCluster.ClusterColor
+import com.thoughtworks.modularizer.models.DraftCluster.ClusterColor
 
 import scala.collection.immutable
 import scala.util.Random.shuffle

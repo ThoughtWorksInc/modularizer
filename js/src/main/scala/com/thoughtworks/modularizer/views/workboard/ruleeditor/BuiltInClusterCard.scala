@@ -1,20 +1,16 @@
-package com.thoughtworks.modularizer.view.workboard.ruleeditor
+package com.thoughtworks.modularizer.views.workboard.ruleeditor
 
-import com.thoughtworks.binding.Binding.{BindingSeq, Var}
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.model.{ClusteringRule, DraftCluster}
-import com.thoughtworks.modularizer.model.DraftCluster.ClusterColor
+import com.thoughtworks.modularizer.models.DraftCluster.ClusterColor
 import org.scalajs.dom._
-
-import scala.collection.immutable
 
 /**
   * @author 杨博 (Yang Bo)
   */
-class UnassignedCard[Items: BindableSeq.Lt[?, String]](items: Items,
-                                                       draftClusters: BindingSeq[DraftCluster],
-                                                       rule: Var[ClusteringRule]) {
+class BuiltInClusterCard[Items: BindableSeq.Lt[?, String]](items: Items,
+                                                           clusterName: String,
+                                                           clusterColor: ClusterColor) {
 
   private val selectUnlockedNodes = new MultipleSelect(items.bindSeq)
 
@@ -26,11 +22,11 @@ class UnassignedCard[Items: BindableSeq.Lt[?, String]](items: Items,
         <div class="input-group-prepend">
           <label
             class="input-group-text"
-            style:backgroundColor={ DraftCluster.UnassignedColorClass.backgroundColor}
-            style:color={ DraftCluster.UnassignedColorClass.textColor }
+            style:backgroundColor={clusterColor.backgroundColor}
+            style:color={ clusterColor.textColor }
           >Built-in Cluster</label>
         </div>
-        <input type="text" readOnly="readOnly" class="form-control" value="Unassigned"/>
+        <input type="text" readOnly="readOnly" class="form-control" value={ clusterName }/>
       </div>
       <div class="card-body">
         <details id="unlockedDetails">

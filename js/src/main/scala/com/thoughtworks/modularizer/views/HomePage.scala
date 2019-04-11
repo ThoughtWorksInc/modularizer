@@ -1,22 +1,29 @@
-package com.thoughtworks.modularizer.view
+package com.thoughtworks.modularizer.views
 import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.modularizer.model.PageState.WorkBoardState
-import com.thoughtworks.modularizer.util._
-import com.thoughtworks.modularizer.model.{JdepsGraph, PageState}
-import com.thoughtworks.modularizer.view.homepage.ImportTab
+import com.thoughtworks.modularizer.models.PageState.WorkBoardState
+import com.thoughtworks.modularizer.utilities._
+import com.thoughtworks.modularizer.models.{JdepsGraph, PageState}
+import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
+import com.thoughtworks.modularizer.views.homepage.ImportTab
 import org.scalajs.dom.{Event, FileList, FileReader, UIEvent}
 import org.scalajs.dom.raw.{FileReader, HTMLInputElement, Node}
 import typings.graphlibDashDotLib.graphlibDashDotMod
 import typings.graphlibLib.graphlibMod.Graph
+import typings.stdLib.GlobalFetch
+
+import scala.concurrent.ExecutionContext
 
 /**
   * @author 杨博 (Yang Bo)
   */
-object HomePage {
+class HomePage(pageState: Var[PageState], outputGraph: Var[Option[Graph]])(
+    implicit fetcher: GlobalFetch,
+    gitStorageConfiguration: GitStorageUrlConfiguration,
+    executionContext: ExecutionContext) {
 
   @dom
-  def render(pageState: Var[PageState], outputGraph: Var[Option[Graph]]) = {
+  val view = {
     val readerOption: Var[Option[FileReader]] = Var(None)
 
     <div class="container-fluid">
@@ -46,7 +53,6 @@ object HomePage {
                   currentTab.value = importTab.view.value
                 }
                 class={s"nav-link ${if (currentTab.bind == importTab.view.bind) "active" else ""}"}
-
               >Import</a>
             </li>
           </ul>

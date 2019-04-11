@@ -1,12 +1,12 @@
-package com.thoughtworks.modularizer.view.workboard
+package com.thoughtworks.modularizer.views.workboard
 
 import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import DraftCluster._
-import com.thoughtworks.modularizer.util._
-import com.thoughtworks.modularizer.view.workboard.ruleeditor._
+import com.thoughtworks.modularizer.utilities._
+import com.thoughtworks.modularizer.views.workboard.ruleeditor._
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Event
 

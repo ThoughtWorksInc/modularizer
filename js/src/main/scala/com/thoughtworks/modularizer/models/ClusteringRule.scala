@@ -1,4 +1,4 @@
-package com.thoughtworks.modularizer.model
+package com.thoughtworks.modularizer.models
 import scala.collection.immutable
 
 /**

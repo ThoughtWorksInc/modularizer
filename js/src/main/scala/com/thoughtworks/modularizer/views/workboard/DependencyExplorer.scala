@@ -1,9 +1,9 @@
-package com.thoughtworks.modularizer.view.workboard
+package com.thoughtworks.modularizer.views.workboard
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.modularizer.model.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import DraftCluster._
-import com.thoughtworks.modularizer.util._
+import com.thoughtworks.modularizer.utilities._
 import org.scalajs.dom.raw.{Event, HTMLLIElement, Node, UIEvent}
 import typings.graphlibLib.graphlibMod.Graph
 

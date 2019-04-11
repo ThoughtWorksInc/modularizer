@@ -22,3 +22,5 @@ addSbtPlugin("org.scalablytyped" % "sbt-scalablytyped" % "201903260537")
 addSbtPlugin("ch.epfl.scala" % "sbt-web-scalajs-bundler" % "0.14.0")
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
+
+addSbtPlugin("com.thoughtworks.sbt-scala-js-map" % "sbt-scala-js-map" % "4.0.0")

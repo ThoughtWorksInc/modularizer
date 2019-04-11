@@ -44,6 +44,8 @@ libraryDependencies += "com.thoughtworks.dsl" %% "keywords-await" % "1.1.1+4-1b8
 
 libraryDependencies += "com.thoughtworks.dsl" %% "keywords-catch" % "1.1.1+4-1b838f6a"
 
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-return" % "1.1.1+4-1b838f6a"
+
 libraryDependencies += "com.thoughtworks.dsl" %% "keywords-nullsafe" % "1.1.1+4-1b838f6a"
 
 libraryDependencies += "com.thoughtworks.dsl" %% "keywords-using" % "1.1.1+4-1b838f6a"

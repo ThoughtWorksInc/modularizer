@@ -1,4 +1,4 @@
-package com.thoughtworks.modularizer.model
+package com.thoughtworks.modularizer.models
 
 import typings.graphlibLib.graphlibMod.{Graph, GraphOptions}
 
@@ -8,7 +8,7 @@ object JdepsGraph {
   private val BeforeSpace: Regex = """^(\S+) .*$""".r
 }
 
-import com.thoughtworks.modularizer.model.JdepsGraph._
+import com.thoughtworks.modularizer.models.JdepsGraph._
 
 /** Contains utilities on graph produced by `jdeps`
   *
@@ -23,7 +23,7 @@ final case class JdepsGraph(jdepsGraph: Graph) extends AnyVal {
     *
     *          {{{
     *                    import typings.graphlibDashDotLib.graphlibDashDotMod
-    *                    import com.thoughtworks.modularizer.model.JdepsGraph
+    *                    import com.thoughtworks.modularizer.models.JdepsGraph
     *                    val jdepsGraph = JdepsGraph(graphlibDashDotMod.^.read("""
     *                      digraph "your.jar" {
     *                          // Path: your/target/your.jar
