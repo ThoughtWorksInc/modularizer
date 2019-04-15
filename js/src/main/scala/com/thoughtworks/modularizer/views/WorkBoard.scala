@@ -46,7 +46,7 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
       {
         autoSave(rule, ruleChanged, eTag).bind
       }
-      <div class="d-flex flex-row flex-grow-1">
+      <div class="d-flex flex-row flex-grow-1" style:minHeight="0">
         { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
         { summaryDiagram.view.bind }
         { ruleEditor.view.bind }
