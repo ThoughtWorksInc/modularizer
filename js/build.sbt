@@ -23,6 +23,10 @@ libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-64-5a774591"
 
+libraryDependencies += "com.thoughtworks.dsl" %%% "dsl" % "1.1.1+18-0516ac07"
+
+libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "1.4.4"
+
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)

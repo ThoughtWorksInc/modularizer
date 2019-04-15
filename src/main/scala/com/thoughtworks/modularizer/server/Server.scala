@@ -124,8 +124,8 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
                     get {
                       forceCheckoutBranch {
                         case Some(ref) =>
-                          val etag = EntityTag(ref.getObjectId.name)
-                          conditional(etag) {
+                          val eTag = EntityTag(ref.getObjectId.name)
+                          conditional(eTag) {
                             mapSettings(_.withFileGetConditional(false)) {
                               getFromFile(fullPath.toFile)
                             }

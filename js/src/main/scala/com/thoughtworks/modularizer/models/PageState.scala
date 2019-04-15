@@ -3,6 +3,7 @@ package com.thoughtworks.modularizer.models
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.JsonHashRoute
 import upickle.default._
+import com.thoughtworks.binding.Binding
 
 /**
   * @author 杨博 (Yang Bo)

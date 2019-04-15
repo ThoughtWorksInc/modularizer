@@ -26,7 +26,6 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
   private val converting: Var[Option[Future[Graph]]] = Var(None)
 
   private val uploading: Binding[Option[js.Thenable[Response]]] = Binding {
-    console.log("uploading")
     branchName.bind match {
       case Some(branch) =>
         converting.bind match {
@@ -38,22 +37,33 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                   fetcher.fetch(gitStorageConfiguration.graphJsonUrl(branch),
                                 RequestInit(method = "PUT", body = JSON.stringify(graphJson))))
               case notRightGraph =>
-                console.log("notRightGen" + notRightGraph)
                 None
             }
           case None =>
-            console.log("no converting")
             None
         }
       case None =>
-        console.log("no branch name")
+        None
+    }
+  }
+
+  /** The result graph after successful converting and uploading */
+  val result: Binding[Option[Graph]] = Binding {
+    converting.bind match {
+      case Some(future) =>
+        FutureBinding(future).bind match {
+          case Some(Success(graph)) => 
+            Some(graph)
+          case _ =>
+            None
+        }
+      case _ =>
         None
     }
   }
 
   @dom
   val view: Binding[Node] = {
-
     branchName.bind match {
       case None =>
         <!-- No branch selected -->
@@ -106,8 +116,6 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                           }
                         </div>
                       case Some(Success(graph)) =>
-                        console.log("Some(Right(graph))")
-                        console.log(graph)
                         uploading.bind match {
                           case None =>
                             <!-- Uploading is not started yet -->
@@ -125,9 +133,16 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                                 </div>
                               case Some(Right(response)) =>
                                 if (response.ok) {
-                                  <div class="alert alert-success" data:role="alert">
-                                    The dependency graph import from jdeps is converted and uploaded successfully.
-                                  </div>
+                                  response.headers.get("ETag") match {
+                                    case null =>
+                                      <div class="alert alert-danger" data:role="alert">
+                                        No ETag found
+                                      </div>
+                                    case _ =>
+                                      <div class="alert alert-success" data:role="alert">
+                                        The dependency graph import from jdeps is converted and uploaded successfully.
+                                      </div>
+                                  }
                                 } else {
                                   <div class="alert alert-danger" data:role="alert">
                                     {

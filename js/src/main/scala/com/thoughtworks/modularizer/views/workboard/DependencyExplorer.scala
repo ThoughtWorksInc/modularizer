@@ -255,7 +255,7 @@ object DependencyExplorer {
     <div class="flex-shrink-1 col-4" style:minWidth="0" style:overflowY="auto">{
       val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Root)
       <div class="card">
-        <ul class="nav nav-tabs sticky-top">
+        <ul class="nav nav-tabs sticky-top bg-white">
           { DependencyExplorerTab.Root.navItem(currentTab).bind }
           { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
           { DependencyExplorerTab.Selection.navItem(currentTab).bind }

@@ -45,8 +45,8 @@ object GitPool extends StrictLogging {
     try {
       Git.open(workTree)
     } catch {
-      case e: RepositoryNotFoundException =>
-        logger.info(s"Cannot open $workTree as a work tree. Calling git init for the directory...", e)
+      case _: RepositoryNotFoundException =>
+        logger.info(s"Cannot open $workTree as a work tree. Calling git init for the directory...")
         val git = Git.init().setDirectory(workTree).call()
         git.checkout().setName(MASTER).setOrphan(true).setAllPaths(true).call()
         logger.info(s"Git repository created at ${git.getRepository.getWorkTree.getAbsolutePath}")
