@@ -47,5 +47,3 @@ scalaJSUseMainModuleInitializer := true
 libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test
 
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
-
-npmExtraArgs += "--registry=http://10.135.100.243:8081/nexus/repository/npm_proxy/"
