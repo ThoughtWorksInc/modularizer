@@ -1,27 +1,19 @@
 package com.thoughtworks.modularizer.views
 import com.thoughtworks.binding.Binding.{Var, Vars}
-import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.utilities._
-import com.thoughtworks.modularizer.models.PageState.WorkBoardState
-import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster, PageState}
-import com.thoughtworks.modularizer.views.workboard.{DependencyExplorer, RuleEditor, SummaryDiagram}
-import org.scalajs.dom.Event
-import typings.graphlibLib.graphlibMod.Graph
-import upickle.default._
-import upickle.implicits._
-import scala.scalajs.js.|
-import scala.scalajs.js
-import scala.scalajs.js.Thenable
-import scala.concurrent.ExecutionContext
-import typings.stdLib.GlobalFetch
+import com.thoughtworks.binding.{Binding, FutureBinding, JsPromiseBinding, dom}
+import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
-import ujson.WebJson
-import typings.stdLib.RequestInit
+import com.thoughtworks.modularizer.views.workboard.{DependencyExplorer, RuleEditor, SummaryDiagram}
 import org.scalablytyped.runtime.StringDictionary
-import com.thoughtworks.binding.JsPromiseBinding
-import typings.stdLib.Response
 import org.scalajs.dom.raw.Node
-import scala.concurrent.Future
+import typings.graphlibLib.graphlibMod.Graph
+import typings.stdLib.{GlobalFetch, RequestInit}
+import ujson.WebJson
+import upickle.default._
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.scalajs.js
+import scala.util.Success
 
 /**
   * @author 杨博 (Yang Bo)
@@ -50,11 +42,11 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
     val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
     val summaryDiagram = new SummaryDiagram(graph, draftClusters, rule, ruleChanged, clusteringReport)
 
-    <div class="container-fluid">
+    <div class="container-fluid d-flex flex-column" style:height="100%">
       {
         autoSave(rule, ruleChanged, eTag).bind
       }
-      <div class="d-flex flex-row" style:height="100%">
+      <div class="d-flex flex-row flex-grow-1">
         { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
         { summaryDiagram.view.bind }
         { ruleEditor.view.bind }
@@ -63,54 +55,65 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
   }
 
   @dom
-  def autoSave(rule: Binding[ClusteringRule], ruleChanged: Binding[Boolean], eTag: Var[Option[String]]): Binding[Node] =
-    if (ruleChanged.bind) {
-      val changedRule = rule.bind
+  def autoSave(rule: Binding[ClusteringRule],
+               ruleChanged: Binding[Boolean],
+               eTag: Var[Option[String]]): Binding[Node] = {
+    val isSaving = Var(false)
+    if (ruleChanged.bind && !isSaving.bind) {
+      FutureBinding(Future {
+        isSaving.value = true
+      }).bind match {
+        case Some(Success(())) =>
+          val changedRule = rule.bind
 
-      import com.thoughtworks.binding.FutureBinding
-      JsPromiseBinding(
-        fetcher.fetch(
-          gitStorageConfiguration.ruleJsonUrl(branch),
-          RequestInit(method = "PUT",
-                      body = write(rule.bind),
-                      headers = StringDictionary(eTag.bind.map("ETag" -> _).toSeq: _*))
-        )
-      ).bind match {
-        case None =>
-          <div class="alert alert-info" data:role="alert">
+          import com.thoughtworks.binding.FutureBinding
+          JsPromiseBinding(
+            fetcher.fetch(
+              gitStorageConfiguration.ruleJsonUrl(branch),
+              RequestInit(method = "PUT",
+                          body = write(rule.bind),
+                          headers = StringDictionary(eTag.bind.map("ETag" -> _).toSeq: _*))
+            )
+          ).bind match {
+            case None =>
+              <div class="alert alert-info" data:role="alert">
             Save to git repository...
           </div>
-        case Some(Right(response)) =>
-          if (response.ok) {
-            (response.headers.get("ETag").asInstanceOf[String]) match {
-              case null =>
+            case Some(Right(response)) =>
+              if (response.ok) {
+                response.headers.get("ETag").asInstanceOf[String] match {
+                  case null =>
+                    <div class="alert alert-danger" data:role="alert">
+                      ETag is not found
+                    </div>
+                  case nextETag: String =>
+                    val _ = FutureBinding(Future {
+                      eTag.value = Some(nextETag)
+                      isSaving.value = false
+                    }).bind
+                    <!-- Save successful -->
+                }
+              } else {
                 <div class="alert alert-danger" data:role="alert">
-                  ETag is not found
+                  {
+                    response.statusText
+                  }
                 </div>
-              case nextETag: String =>
-                val _ = FutureBinding(Future {
-                  eTag.value = Some(nextETag)
-                }).bind
-                <!-- Save successful -->
-            }
-          } else {
-            <div class="alert alert-danger" data:role="alert">
-              {
-                response.statusText
               }
-            </div>
+            case Some(Left(e)) =>
+              <div class="alert alert-danger" data:role="alert">
+                {
+                  e.toString
+                }
+              </div>
           }
-        case Some(Left(e)) =>
-          <div class="alert alert-danger" data:role="alert">
-            {
-              e.toString
-            }
-          </div>
+        case _ =>
+          <!-- Waiting for future execution -->
       }
     } else {
       <!-- Rule is unchanged -->
     }
-
+  }
   @dom
   val view = {
     JsPromiseBinding(
@@ -128,7 +131,7 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
           case 404 =>
             board(ClusteringRule(Set.empty, collection.immutable.Seq.empty), None).bind
           case _ if response.ok =>
-            (response.headers.get("ETag").asInstanceOf[String]) match {
+            response.headers.get("ETag").asInstanceOf[String] match {
               case null =>
                 <div class="alert alert-danger" data:role="alert">
                 ETag is not found
