@@ -1,3 +1,7 @@
+enablePlugins(JavaServerAppPackaging)
+
+enablePlugins(DockerPlugin)
+
 enablePlugins(SbtWeb)
 
 enablePlugins(SbtSassify)
@@ -57,3 +61,9 @@ ThisBuild / organization := "com.thoughtworks.modularizer"
 fork := true
 
 reStart / aggregate := false
+
+ThisBuild / dynverSeparator := "-"
+
+dockerExposedPorts += 42019
+
+dockerBaseImage := "openjdk:11.0.2"
