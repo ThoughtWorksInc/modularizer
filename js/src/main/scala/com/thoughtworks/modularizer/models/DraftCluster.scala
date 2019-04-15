@@ -13,13 +13,17 @@ final case class DraftCluster(name: Var[String], nodeIds: Vars[String], color: V
 }
 object DraftCluster {
 
+  def loadFrom(cluster: ClusteringRule.Cluster, color: ClusterColor) = {
+    DraftCluster(Var(cluster.parent), Vars(cluster.children: _*), Var(color))
+  }
+
   case class ClusterColor(textColorName: String, backgroundColorName: String) {
     val textColor = s"var(--$textColorName)"
     val backgroundColor = s"var(--$backgroundColorName)"
   }
 
   final val CustomClusterColors = shuffle(
-    Seq(
+    IndexedSeq(
       ClusterColor("light", "blue"),
       ClusterColor("light", "indigo"),
       ClusterColor("light", "purple"),

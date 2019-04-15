@@ -40,9 +40,9 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
     val rule = Var(initialRule)
     val eTag = Var(initialETag)
     val ruleChanged = Var(false)
-
-    val draftClusters = Vars.empty[DraftCluster]
-    // TODO: read draftClusters from saved files
+    val draftClusters = Vars((for ((cluster, i) <- initialRule.clusters.zipWithIndex) yield {
+      DraftCluster.loadFrom(cluster, DraftCluster.CustomClusterColors(i % DraftCluster.CustomClusterColors.length))
+    }): _*)
     val clusteringReport = Binding {
       new ClusteringReport(graph, rule.bind)
     }
