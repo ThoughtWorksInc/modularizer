@@ -24,7 +24,7 @@ package object utilities {
 
   type Bidirectional[A] = Binding[A] !! A
 
-  // TODO: 此处类型不太对，没办法创建自定义的 Binding[Unit] 或者 MountPointZ
+  // TODO: 此处类型不太对，没办法创建自定义的 Binding[Unit] 或者 MountPoint
   // implicit final class TwoWayInputOps private[utilities] (private val input: HTMLInputElement) extends AnyVal {
   //   def twoWayValue: Unit = ()
   //   def twoWayValue_=[K](k: K)(implicit dsl: Dsl[K, Binding[String], String]): Binding[Unit] = {

@@ -37,20 +37,21 @@ object Main {
 
     val route = new com.thoughtworks.modularizer.utilities.HashRoute
 
-    val currentState = route { previousState =>
-      Binding {
-        page.bind match {
-          case homePage: HomePage =>
-            (homePage.result.bind, homePage.branch.bind) match {
-              case (Some(graph), Some(branch)) =>
-                "work-board/"
-              case _ =>
-                ""
-            }
-          case workBoard: WorkBoard =>
-            "work-board/" + workBoard.nextState.bind
+    val currentState = route {
+      case () =>
+        Binding {
+          page.bind match {
+            case homePage: HomePage =>
+              (homePage.result.bind, homePage.branch.bind) match {
+                case (Some(graph), Some(branch)) =>
+                  "work-board/"
+                case _ =>
+                  ""
+              }
+            case workBoard: WorkBoard =>
+              "work-board/" + workBoard.nextState.bind
+          }
         }
-      }
     }
 
     val page: Binding[Page] = Binding {

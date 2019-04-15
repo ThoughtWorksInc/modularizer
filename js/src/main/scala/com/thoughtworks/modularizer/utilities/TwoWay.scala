@@ -17,25 +17,23 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.FutureBinding
 import scala.concurrent.Future
 
-case class TwoWay[A](v: Var[A]) extends AnyVal with Keyword[TwoWay[A], A]
+case class TwoWay[A](v: Var[A]) extends AnyVal with Keyword[TwoWay[A], Unit]
 
 object TwoWay {
 
-  implicit def twoWayDsl[A](implicit executionContext: ExecutionContext): Dsl[TwoWay[A], Binding[A], A] = {
+  implicit def twoWayDsl[A](implicit executionContext: ExecutionContext): Dsl[TwoWay[A], Binding[A], Unit] = {
     (keyword, modification) =>
       val TwoWay(v) = keyword
       Binding {
-        val currentValue = v.bind
-        val nextValue = modification(currentValue).bind
-        FutureBinding(
-          Future {
-            v.value = nextValue
-          }
-        ).bind match {
+        FutureBinding(Future {}).bind match {
           case Some(Success(())) =>
-            nextValue
+            val currentState = modification(()).bind
+            val () = FutureBinding(Future {
+              v.value = currentState
+            }).map(Function.const(())).bind
+            v.bind
           case _ =>
-            currentValue
+            v.value
         }
       }
   }
