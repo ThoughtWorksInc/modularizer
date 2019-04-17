@@ -15,12 +15,9 @@ import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.Node
 import typings.graphlibLib.graphlibMod.Graph
 import typings.stdLib.{GlobalFetch, RequestInit}
-import ujson.WebJson
 import upickle.default._
-import typings.graphlibLib.graphlibMod
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.scalajs.js
 import scala.util.Success
 
 /**

@@ -1,22 +1,14 @@
 package com.thoughtworks.modularizer.views
-import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
-import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.modularizer.models.PageState.WorkBoardState
-import com.thoughtworks.modularizer.utilities._
-import com.thoughtworks.modularizer.models.{JdepsGraph, PageState}
+import com.thoughtworks.binding.Binding.Var
+import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
-import com.thoughtworks.modularizer.views.homepage.ImportTab
-import org.scalajs.dom.{Event, FileList, FileReader, UIEvent}
-import org.scalajs.dom.raw.{FileReader, HTMLInputElement, Node}
-import typings.graphlibDashDotLib.graphlibDashDotMod
-import typings.graphlibLib.graphlibMod.Graph
+import com.thoughtworks.modularizer.views.homepage.{ImportTab, OpenTab, Tab}
+import org.scalajs.dom.Event
+import org.scalajs.dom.raw.Node
 import typings.stdLib.GlobalFetch
-import com.thoughtworks.modularizer.views.homepage.OpenTab
-import com.thoughtworks.modularizer.views.homepage.Tab
 
 import scala.concurrent.ExecutionContext
-import shapeless.:+:
 
 /**
   * @author 杨博 (Yang Bo)
@@ -28,12 +20,12 @@ class HomePage(implicit fetcher: GlobalFetch,
 
   val importTab = new ImportTab
   val openTab = new OpenTab
-  val currentTab = Var[Tab](importTab)
+  val currentTab: Var[Tab] = Var[Tab](importTab)
 
-  val branch = currentTab.flatMap(_.branchName)
+  val branch: Binding[Option[String]] = currentTab.flatMap(_.branchName)
 
   @dom
-  val view = {
+  val view: Binding[Node] = {
     <div class="container-fluid">
       <div class="card">
         {

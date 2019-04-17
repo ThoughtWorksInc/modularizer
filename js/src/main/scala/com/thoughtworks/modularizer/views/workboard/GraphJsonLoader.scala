@@ -1,18 +1,15 @@
 package com.thoughtworks.modularizer.views.workboard
 
+import com.thoughtworks.binding.Binding.Constants
 import com.thoughtworks.binding.bindable._
-import com.thoughtworks.binding.Binding.{Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
 import org.scalajs.dom.raw.Node
+import typings.graphlibLib.graphlibMod
 import typings.graphlibLib.graphlibMod.Graph
 import typings.stdLib.{GlobalFetch, RequestInit, Response}
-import upickle.default._
-import typings.graphlibLib.graphlibMod
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.scalajs.js
-
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js
 import scala.scalajs.js.{Promise, Thenable}
 
@@ -28,7 +25,6 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
       gitStorageConfiguration.graphJsonUrl(branch),
       RequestInit(method = "GET")
     )
-
   private val graphBody: Binding[Option[Thenable[Graph]]] = Binding {
     graphResponse.bind match {
       case Some(Right(response)) =>
@@ -41,7 +37,6 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
         None
     }
   }
-
   val result: Binding[Option[Graph]] = Binding {
     graphBody.bind match {
       case Some(thenable) =>
@@ -55,7 +50,6 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
         None
     }
   }
-
   @dom
   val graphResponseStatus: Binding[Node] = {
     graphResponse.bind match {
@@ -81,7 +75,6 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
         </div>
     }
   }
-
   @dom
   val graphBodyStatus: Binding[Node] = {
     graphBody.bind match {
@@ -105,7 +98,6 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
         }
     }
   }
-
   val view: Binding[Constants[Node]] = Binding {
     Constants(graphResponseStatus.bind, graphBodyStatus.bind)
   }
