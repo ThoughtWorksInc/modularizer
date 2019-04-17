@@ -33,7 +33,7 @@ object HashRoute {
             val () = FutureBinding(Future {
               window.location.hash = currentState
             }).map(Function.const(())).bind
-            new LatestEvent[Event](window, "hashchange").bind match {
+            LatestEvent.hashchange(window).bind match {
               case None =>
                 currentState
               case Some(event) =>

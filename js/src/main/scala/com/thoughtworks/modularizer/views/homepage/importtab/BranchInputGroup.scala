@@ -1,14 +1,12 @@
 package com.thoughtworks.modularizer.views.homepage.importtab
 
-import com.thoughtworks.binding.{Binding, JsPromiseBinding, LatestEvent, dom}
+import com.thoughtworks.binding.{Binding, LatestEvent, dom}
+import com.thoughtworks.binding.bindable._
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
 import org.scalajs.dom.raw._
 import typings.stdLib.GlobalFetch
 import typings.stdLib.Response
 import typings.stdLib.RequestInit
-
-import scala.scalajs.js.URIUtils._
-import scala.scalajs.js
 
 /**
   * @author 杨博 (Yang Bo)
@@ -38,7 +36,7 @@ class BranchInputGroup(implicit fetcher: GlobalFetch, gitStorageConfiguration: G
     uncheckedBranchName.bind match {
       case None => None
       case Some(branch) =>
-        JsPromiseBinding(fetcher.fetch(gitStorageConfiguration.graphJsonUrl(branch), RequestInit(method = "HEAD"))).bind
+        fetcher.fetch(gitStorageConfiguration.graphJsonUrl(branch), RequestInit(method = "HEAD")).bind
     }
   }
 

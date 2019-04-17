@@ -1,7 +1,7 @@
 package com.thoughtworks.modularizer.views.homepage
 
-import com.thoughtworks.binding.FutureBinding
 import com.thoughtworks.binding.Binding.Var
+import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.{Binding, JsPromiseBinding, LatestEvent, dom}
 import com.thoughtworks.modularizer.models.{JdepsGraph, PageState}
 import com.thoughtworks.modularizer.models.PageState.WorkBoardState
@@ -31,20 +31,17 @@ class ImportTab(implicit fetcher: GlobalFetch,
   private val dotFileInputGroup = new DotFileInputGroup
   private val importButtonGroup = new ImportButtonGroup(branchInputGroup.branchName, dotFileInputGroup.loadedText)
 
-  def result = importButtonGroup.result
-  def branchName = branchInputGroup.branchName
+  def branchName = Binding {
+    importButtonGroup.result.bind match {
+      case None =>
+        None
+      case Some(graph) =>
+        branchInputGroup.branchName.bind
+    }
+  }
 
   @dom
   val view: Binding[HTMLFormElement] = {
-    // (importButtonGroup.result.bind, importButtonGroup.eTag.bind) match {
-    //   case (someGraph @ Some(_), someETag @ Some(_)) =>
-    //     FutureBinding(Future {
-    //       outputGraph.value = someGraph
-    //       eTag.value = someETag
-    //       pageState.value = PageState.WorkBoard(WorkBoardState.Summary)
-    //     }).bind
-    //   case _ =>
-    // }
     <form>
       { branchInputGroup.view.bind }
       { dotFileInputGroup.view.bind }

@@ -177,7 +177,7 @@ object DependencyExplorer {
         <summary>Dependents</summary>
         {
           if ({
-            val _ = new LatestEvent[Event](nodeDetails, "toggle").bind
+            val _ = LatestEvent.toggle(nodeDetails).bind
             nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]
           }) {
             Constants(dependents: _*).flatMapBinding { edge =>
@@ -206,7 +206,7 @@ object DependencyExplorer {
       <details id="nodeDetails">
         <summary>Dependencies</summary>
         {
-          val _ = new LatestEvent[UIEvent](nodeDetails, "toggle").bind
+          val _ = LatestEvent.toggle(nodeDetails).bind
           if (nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]) {
             Constants(dependencies: _*).flatMapBinding { edge =>
               neighborList(graph, clusteringReport, edge.w, draftClusters)

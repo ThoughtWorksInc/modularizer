@@ -17,7 +17,7 @@ libraryDependencies += "com.thoughtworks.binding" %%% "dom" % "11.7.0+144-c34de6
 
 libraryDependencies += "com.thoughtworks.binding" %%% "jsonhashroute" % "0.2.0"
 
-libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.1.0-5-8a619f31"
+libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.2.0+12-59d56a67"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
@@ -47,3 +47,6 @@ scalaJSUseMainModuleInitializer := true
 libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test
 
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
+
+
+libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-65-01bc9d99"

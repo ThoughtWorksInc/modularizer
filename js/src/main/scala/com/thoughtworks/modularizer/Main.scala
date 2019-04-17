@@ -33,8 +33,6 @@ object Main {
                  gitStorageConfiguration: GitStorageUrlConfiguration,
                  executionContext: ExecutionContext) {
 
-    val homePage = new HomePage
-
     val route = new com.thoughtworks.modularizer.utilities.HashRoute
 
     val currentState = route {
@@ -42,14 +40,14 @@ object Main {
         Binding {
           page.bind match {
             case homePage: HomePage =>
-              (homePage.result.bind, homePage.branch.bind) match {
-                case (Some(graph), Some(branch)) =>
-                  "work-board/"
+              homePage.branch.bind match {
+                case Some(branch) =>
+                  s"work-board/$branch"
                 case _ =>
                   ""
               }
             case workBoard: WorkBoard =>
-              "work-board/" + workBoard.nextState.bind
+              s"work-board/${workBoard.branch}"
           }
         }
     }
@@ -57,24 +55,10 @@ object Main {
     val page: Binding[Page] = Binding {
       val hash = Url.parse(currentState.bind) // TODO: 实现一套 UrlBinding
       hash match {
-        case Url(PathParts("work-board", rest @ _*), queryString, None) =>
-          (homePage.result.bind, homePage.branch.bind) match {
-            case (Some(graph), Some(branch)) =>
-              new WorkBoard(graph, branch)
-            case _ =>
-              // <div class="alert alert-warning" data:role="alert">
-              //   <p>
-              //     No graph found. You may want to import a <kbd>jdeps</kbd> report first.
-              //   </p>
-              //   <hr/>
-              //   <button type="button" class="btn btn-primary" onclick={ _: Event =>
-              //     pageState.value = PageState.HomePage
-              //   }>Import</button>
-              // </div>
-              homePage
-          }
+        case Url(PathParts("work-board", branch, rest @ _*), queryString, None) =>
+          new WorkBoard(branch)
         case _ =>
-          homePage
+          new HomePage
       }
     }
 
@@ -83,27 +67,6 @@ object Main {
     }
 
   }
-
-  // @dom
-  // def render() = {
-  //   val gitStorageUrlConfiguration = new GitStorageUrlConfiguration
-  //   val graphOption: Var[Option[Graph]] = Var(None)
-  //   val pageState = Var[PageState](PageState.HomePage)
-  //   val () = new JsonHashRoute(pageState).bind
-
-  //   val renderHomePage: Component[Unit, Node] = { _ =>
-  //     new HomePage()(stdLib.^.window, gitStorageUrlConfiguration, ExecutionContext.global, pageState).view
-  //   }
-  //   val renderWorkBoard: Component[WorkBoardState, Node] = { workBoardState =>
-  //     WorkBoard.render(pageState, workBoardState, graphOption)
-  //   }
-  //   partialUpdate(pageState.map {
-  //     case PageState.HomePage =>
-  //       renderHomePage(())
-  //     case PageState.WorkBoard(graphState) =>
-  //       renderWorkBoard(graphState)
-  //   }).bind
-  // }
 
   def main(args: Array[String]): Unit = {
     implicit val gitStorageUrlConfiguration = new GitStorageUrlConfiguration

@@ -1,6 +1,7 @@
 package com.thoughtworks.modularizer.views.homepage.opentab
 
-import com.thoughtworks.binding.{Binding, FutureBinding, JsPromiseBinding, dom}
+import com.thoughtworks.binding.{Binding, dom}
+import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.modularizer.models.JdepsGraph
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
@@ -23,54 +24,7 @@ class OpenButtonGroup(branchName: Binding[Option[String]])(implicit fetcher: Glo
                                                            gitStorageConfiguration: GitStorageUrlConfiguration,
                                                            executionContext: ExecutionContext) {
 
-  private val downloading: Var[Option[js.Thenable[Response]]] = Var(None)
-  private val parsing: Binding[Option[js.Thenable[Graph]]] = Binding {
-    downloading.bind match {
-      case Some(dowloadingStarted) =>
-        JsPromiseBinding(dowloadingStarted).bind match {
-          case Some(Right(response)) =>
-            val jsonPromise = response.json().asInstanceOf[js.Promise[js.Object]]
-            Some(jsonPromise.`then`[Graph](graphlibMod.jsonNs.read(_)))
-          case _ =>
-            None
-        }
-      case None =>
-        None
-    }
-  }
-
-  /** The result graph after successful downloading */
-  val result: Binding[Option[Graph]] = Binding {
-    parsing.bind match {
-      case Some(thenable) => 
-        JsPromiseBinding(thenable).bind match {
-          case Some(Right(graph)) => 
-            Some(graph)
-          case _ =>
-            None
-        }
-      case _ =>
-        None
-    }
-  }
-
-  private val isPendingDownload = Binding {
-    downloading.bind match {
-      case None =>
-        false
-      case Some(dowloadingStarted) =>
-        JsPromiseBinding(dowloadingStarted).bind.isEmpty
-    }
-  }
-
-  private val isPendingParse = Binding {
-    parsing.bind match {
-      case None =>
-        false
-      case Some(parsingStarted) =>
-        JsPromiseBinding(parsingStarted).bind.isEmpty
-    }
-  }
+  val isClicked = Var(false)
 
   @dom
   val view: Binding[Node] = {
@@ -82,63 +36,12 @@ class OpenButtonGroup(branchName: Binding[Option[String]])(implicit fetcher: Glo
           <button
             type="submit"
             class="btn btn-primary"
-            disabled={ isPendingDownload.bind || isPendingParse.bind }
+            disabled={ branchName.bind.isEmpty || isClicked.bind }
             onclick={ event: Event =>
               event.preventDefault()
-              downloading.value = Some(fetcher.fetch(gitStorageConfiguration.graphJsonUrl(branch), RequestInit(method = "GET")))
+              isClicked.value = true
             }
           >Import</button>
-          {
-              downloading.bind match {
-                case None =>
-                  <!-- Downloading is not started yet -->
-                case Some(dowloadingStarted) =>
-                  JsPromiseBinding(dowloadingStarted).bind match {
-                    case None =>
-                      <div class="alert alert-info" data:role="alert">
-                        Connecting to git repository...
-                      </div>
-                    case Some(Left(e)) =>
-                      <div class="alert alert-danger" data:role="alert">
-                        {
-                          e.toString
-                        }
-                      </div>
-                    case Some(Right(response)) =>
-                      if (response.ok) {
-                        parsing.bind match {
-                          case None => 
-                            <div class="alert alert-success" data:role="alert">
-                              Connected to git repository.
-                            </div>
-                          case Some(parsingStarted) =>
-                            JsPromiseBinding(parsingStarted).bind match {
-                              case None => 
-                                <div class="alert alert-info" data:role="alert">
-                                  Downloading the graph from git repository...
-                                </div>
-                              case Some(Right(graph)) =>
-                                <div class="alert alert-success" data:role="alert">
-                                  The dependency graph is downloaded successfully.
-                                </div>
-                              case Some(Left(e)) =>
-                                <div class="alert alert-danger" data:role="alert">
-                                  {
-                                    e.toString
-                                  }
-                                </div>
-                            }
-                        }
-                      } else {
-                        <div class="alert alert-danger" data:role="alert">
-                          {
-                            response.statusText
-                          }
-                        </div>
-                      }
-                  }
-              }
-            }
         </div>
     }
 

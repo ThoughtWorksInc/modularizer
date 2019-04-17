@@ -1,15 +1,23 @@
 package com.thoughtworks.modularizer.views
-import com.thoughtworks.binding.Binding.{Var, Vars}
-import com.thoughtworks.binding.{Binding, FutureBinding, JsPromiseBinding, dom}
+import com.thoughtworks.binding.bindable._
+import com.thoughtworks.binding.Binding.{Constants, Var, Vars}
+import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
-import com.thoughtworks.modularizer.views.workboard.{DependencyExplorer, RuleEditor, SummaryDiagram}
+import com.thoughtworks.modularizer.views.workboard.{
+  DependencyExplorer,
+  GraphJsonLoader,
+  RuleEditor,
+  RuleJsonLoader,
+  SummaryDiagram
+}
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.Node
 import typings.graphlibLib.graphlibMod.Graph
 import typings.stdLib.{GlobalFetch, RequestInit}
 import ujson.WebJson
 import upickle.default._
+import typings.graphlibLib.graphlibMod
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
@@ -18,17 +26,16 @@ import scala.util.Success
 /**
   * @author 杨博 (Yang Bo)
   */
-class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
-                                              gitStorageConfiguration: GitStorageUrlConfiguration,
-                                              executionContext: ExecutionContext)
+class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
+                                    gitStorageConfiguration: GitStorageUrlConfiguration,
+                                    executionContext: ExecutionContext)
     extends Page {
 
-  val nextState: Binding[String] = Binding {
-    "" // TODO
-  }
+  val graphJsonLoader = new GraphJsonLoader(branch)
+  val ruleJsonLoader = new RuleJsonLoader(branch)
 
   @dom
-  def board(initialRule: ClusteringRule, initialETag: Option[String]) = {
+  def board(graph: Graph, initialRule: ClusteringRule, initialETag: Option[String]): Binding[Constants[Node]] = {
     val rule = Var(initialRule)
     val eTag = Var(initialETag)
     val ruleChanged = Var(false)
@@ -42,16 +49,14 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
     val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
     val summaryDiagram = new SummaryDiagram(graph, draftClusters, rule, ruleChanged, clusteringReport)
 
-    <div class="container-fluid d-flex flex-column" style:height="100%">
-      {
-        autoSave(rule, ruleChanged, eTag).bind
-      }
+    Constants(
+      autoSave(rule, ruleChanged, eTag).bind,
       <div class="d-flex flex-row flex-grow-1" style:minHeight="0">
         { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
         { summaryDiagram.view.bind }
         { ruleEditor.view.bind }
       </div>
-    </div>
+    )
   }
 
   @dom
@@ -60,25 +65,21 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
                eTag: Var[Option[String]]): Binding[Node] = {
     val isSaving = Var(false)
     if (ruleChanged.bind && !isSaving.bind) {
-      FutureBinding(Future {
-        isSaving.value = true
-      }).bind match {
+      Future { isSaving.value = true }.bind match {
         case Some(Success(())) =>
           val changedRule = rule.bind
-
-          import com.thoughtworks.binding.FutureBinding
-          JsPromiseBinding(
-            fetcher.fetch(
+          fetcher
+            .fetch(
               gitStorageConfiguration.ruleJsonUrl(branch),
               RequestInit(method = "PUT",
                           body = write(rule.bind),
                           headers = StringDictionary(eTag.bind.map("ETag" -> _).toSeq: _*))
             )
-          ).bind match {
+            .bind match {
             case None =>
               <div class="alert alert-info" data:role="alert">
-            Save to git repository...
-          </div>
+                Save to git repository...
+              </div>
             case Some(Right(response)) =>
               if (response.ok) {
                 response.headers.get("ETag").asInstanceOf[String] match {
@@ -87,10 +88,10 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
                       ETag is not found
                     </div>
                   case nextETag: String =>
-                    val _ = FutureBinding(Future {
+                    val _ = Future {
                       eTag.value = Some(nextETag)
                       isSaving.value = false
-                    }).bind
+                    }.bind
                     <!-- Save successful -->
                 }
               } else {
@@ -115,63 +116,19 @@ class WorkBoard(graph: Graph, branch: String)(implicit fetcher: GlobalFetch,
     }
   }
   @dom
-  val view = {
-    JsPromiseBinding(
-      fetcher.fetch(
-        gitStorageConfiguration.ruleJsonUrl(branch),
-        RequestInit(method = "GET")
-      )
-    ).bind match {
-      case None =>
-        <div class="alert alert-info" data:role="alert">
-          Connecting to git repository...
-        </div>
-      case Some(Right(response)) =>
-        response.status match {
-          case 404 =>
-            board(ClusteringRule(Set.empty, collection.immutable.Seq.empty), None).bind
-          case _ if response.ok =>
-            response.headers.get("ETag").asInstanceOf[String] match {
-              case null =>
-                <div class="alert alert-danger" data:role="alert">
-                ETag is not found
-              </div>
-              case initialETag: String =>
-                val ruleJsonPromise = response.json()
-                JsPromiseBinding(ruleJsonPromise.`then`[ClusteringRule] { ruleJson =>
-                  val initialRule: ClusteringRule =
-                    WebJson.transform(ruleJson.asInstanceOf[js.Any], reader[ClusteringRule])
-                  initialRule
-                }).bind match {
-                  case None =>
-                    <div class="alert alert-info" data:role="alert">
-                    Downloading to rule.json...
-                  </div>
-                  case Some(Right(initialRule)) =>
-                    board(initialRule, Some(initialETag)).bind
-                  case Some(Left(e)) =>
-                    <div class="alert alert-danger" data:role="alert">
-                      {
-                        e.toString
-                      }
-                    </div>
-                }
-            }
+  val view: Binding[Node] = {
+    <div class="container-fluid d-flex flex-column" style:height="100%">
+      { ruleJsonLoader.view.bindSeq }
+      { graphJsonLoader.view.bindSeq }
+      {
+        (graphJsonLoader.result.bind, ruleJsonLoader.result.bind) match {
+          case (Some(graph), Some(rule)) =>
+            board(graph, rule, ruleJsonLoader.eTag.bind).bindSeq
           case _ =>
-            <div class="alert alert-danger" data:role="alert">
-              {
-                response.statusText
-              }
-            </div>
+            Constants.empty
         }
-      case Some(Left(e)) =>
-        <div class="alert alert-danger" data:role="alert">
-          {
-            e.toString
-          }
-        </div>
-    }
-
+      }
+    </div>
   }
 
 }

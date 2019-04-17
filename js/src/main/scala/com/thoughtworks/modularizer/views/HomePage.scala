@@ -30,7 +30,6 @@ class HomePage(implicit fetcher: GlobalFetch,
   val openTab = new OpenTab
   val currentTab = Var[Tab](importTab)
 
-  val result = currentTab.flatMap(_.result)
   val branch = currentTab.flatMap(_.branchName)
 
   @dom

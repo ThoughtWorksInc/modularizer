@@ -27,7 +27,7 @@ class BranchInputGroup(implicit fetcher: GlobalFetch, gitStorageConfiguration: G
 
   val branchName: Binding[Option[String]] = Binding {
     val element = input.bind
-    val _ = LatestEvent.change(element).bind
+    val _ = LatestEvent.input(element).bind
     element.value match {
       case ""     => None
       case branch => Some(branch)

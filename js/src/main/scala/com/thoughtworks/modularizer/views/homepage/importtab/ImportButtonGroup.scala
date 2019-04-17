@@ -1,7 +1,8 @@
 package com.thoughtworks.modularizer.views.homepage.importtab
 
-import com.thoughtworks.binding.{Binding, FutureBinding, JsPromiseBinding, dom}
+import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.Var
+import com.thoughtworks.binding.bindable._
 import com.thoughtworks.modularizer.models.JdepsGraph
 import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
 import org.scalajs.dom.raw._
@@ -30,7 +31,7 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
       case Some(branch) =>
         converting.bind match {
           case Some(convertingStarted) =>
-            FutureBinding(convertingStarted).bind match {
+            convertingStarted.bind match {
               case Some(Success(graph)) =>
                 val graphJson = graphlibMod.jsonNs.write(graph)
                 Some(
@@ -51,8 +52,8 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
   val result: Binding[Option[Graph]] = Binding {
     converting.bind match {
       case Some(future) =>
-        FutureBinding(future).bind match {
-          case Some(Success(graph)) => 
+        future.bind match {
+          case Some(Success(graph)) =>
             Some(graph)
           case _ =>
             None
@@ -81,13 +82,13 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                     case None =>
                       false // Converting is not started yet
                     case Some(convertingStarted) =>
-                      FutureBinding(convertingStarted).bind.isEmpty
+                      convertingStarted.bind.isEmpty
                   }
                   val isPendingUploading = uploading.bind match {
                     case None =>
                       false // Uploading is not started yet
                     case Some(convertingStarted) =>
-                      JsPromiseBinding(convertingStarted).bind.isEmpty
+                      convertingStarted.bind.isEmpty
                   }
                   isPendingConverting || isPendingUploading
                 }
@@ -104,7 +105,7 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                   case None =>
                     <!-- Converting and uploading are not started yet -->
                   case Some(convertingStarted) =>
-                    FutureBinding(convertingStarted).bind match {
+                    convertingStarted.bind match {
                       case None =>
                         <div class="alert alert-info" data:role="alert">
                           Converting jdeps DOT file to graph.json...
@@ -120,7 +121,7 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                           case None =>
                             <!-- Uploading is not started yet -->
                           case Some(uploadingStarted) =>
-                            JsPromiseBinding(uploadingStarted).bind match {
+                             uploadingStarted.bind match {
                               case None =>
                                 <div class="alert alert-info" data:role="alert">
                                   Uploading the graph to git repository...
@@ -133,15 +134,14 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                                 </div>
                               case Some(Right(response)) =>
                                 if (response.ok) {
-                                  response.headers.get("ETag") match {
-                                    case null =>
-                                      <div class="alert alert-danger" data:role="alert">
-                                        No ETag found
-                                      </div>
-                                    case _ =>
-                                      <div class="alert alert-success" data:role="alert">
-                                        The dependency graph import from jdeps is converted and uploaded successfully.
-                                      </div>
+                                  if (response.headers.get("ETag") == null) {
+                                    <div class="alert alert-danger" data:role="alert">
+                                      No ETag found
+                                    </div>
+                                  } else {
+                                    <div class="alert alert-success" data:role="alert">
+                                      The dependency graph import from jdeps is converted and uploaded successfully.
+                                    </div>
                                   }
                                 } else {
                                   <div class="alert alert-danger" data:role="alert">
@@ -152,9 +152,9 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                                 }
                             }
                         }
-                      }
                     }
                 }
+              }
             </div>
         }
     }
