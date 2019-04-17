@@ -6,6 +6,7 @@ import java.util.concurrent.ArrayBlockingQueue
 import com.thoughtworks.modularizer.server.Server.logger
 import com.typesafe.scalalogging.StrictLogging
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.ResetCommand.ResetType
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.lib.Constants._
 
@@ -27,6 +28,9 @@ object GitPool extends StrictLogging {
               clean()
                 .setForce(true)
                 .setCleanDirectories(true)
+                .call()
+              reset()
+                .setMode(ResetType.HARD)
                 .call()
             } finally {
               queue.offer(this).ensuring(_ == true)
