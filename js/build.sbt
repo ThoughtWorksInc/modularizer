@@ -21,7 +21,7 @@ libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.2.0+12-
 
 libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
-libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-64-5a774591"
+libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.1.0"
 
 libraryDependencies += "com.thoughtworks.dsl" %%% "dsl" % "1.1.1+18-0516ac07"
 
@@ -47,6 +47,3 @@ scalaJSUseMainModuleInitializer := true
 libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test
 
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
-
-
-libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.0.1-65-01bc9d99"
