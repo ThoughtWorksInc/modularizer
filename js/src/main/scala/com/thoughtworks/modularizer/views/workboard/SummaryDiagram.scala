@@ -20,7 +20,7 @@ private object SummaryDiagram {
 
     private var clusterNameOption: Option[String] = None
 
-    override def unmount() = {
+    override def unmount(): Unit = {
       clusterNameOption.foreach(graphD3.removeNode)
       clusterNameOption = None
       super.unmount()
@@ -43,7 +43,6 @@ private object SummaryDiagram {
 class SummaryDiagram(simpleGraph: Graph,
                      draftClusters: Vars[DraftCluster],
                      clusteringRule: Var[ClusteringRule],
-                     clusteringRuleChanged: Var[Boolean],
                      clusteringReport: Binding[ClusteringReport]) {
 
   @dom
@@ -69,9 +68,8 @@ class SummaryDiagram(simpleGraph: Graph,
         style:right="2em"
         onclick={ _: Event=>
           clusteringRule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
-          clusteringRuleChanged.value = true
         }
-      ><span class="fas fa-sync"></span></button>
+      ><span class="fas fa-save"></span></button>
       {svgContainer}
     </div>
   }
