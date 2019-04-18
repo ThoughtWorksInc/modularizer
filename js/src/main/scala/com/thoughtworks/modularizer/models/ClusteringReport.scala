@@ -137,73 +137,38 @@ object ClusteringReport {
     *          }}}
     *
     */
+  @deprecated("Use [[findNearestClusters]] instead", "")
   private[modularizer] def findSingleNearestCluster(
       paths: StringDictionary[StringDictionary[Path]],
       clusterIds: js.Array[String],
       currentNodeId: String
   ): NearestCluster = {
-    @tailrec
-    def hasDependency(clusterId: String, i: Int): NearestCluster = {
-      if (i < clusterIds.length) {
-        val newClusterId = clusterIds(i)
-        paths(newClusterId)(currentNodeId).distance match {
-          case Double.PositiveInfinity =>
-            hasDependency(clusterId, i + 1)
-          case _ =>
-            if (!paths(clusterId)(newClusterId).distance.isPosInfinity) {
-              hasDependency(newClusterId, i + 1)
-            } else if (!paths(newClusterId)(clusterId).distance.isPosInfinity) {
-              hasDependency(clusterId, i + 1)
-            } else {
-              NearestCluster.Multiple
-            }
-        }
-      } else {
-        NearestCluster.One(clusterId)
-      }
-    }
-
-    @tailrec
-    def noDependencyYet(i: Int): NearestCluster = {
-      if (i < clusterIds.length) {
-        val clusterId = clusterIds(i)
-        paths(clusterId)(currentNodeId).distance match {
-          case Double.PositiveInfinity =>
-            noDependencyYet(i + 1)
-          case _ =>
-            hasDependency(clusterId, i + 1)
-        }
-      } else {
+    val result = findNearestClusters(paths, clusterIds, currentNodeId)
+    result.length match {
+      case 0 =>
         NearestCluster.Zero
-      }
+      case 1 =>
+        NearestCluster.One(result(0))
+      case _ =>
+        NearestCluster.Multiple
     }
-
-    noDependencyYet(0)
   }
 
+  def isReachable(paths: StringDictionary[StringDictionary[Path]], from: String, clusterId: String): Boolean = {
+    paths.get(clusterId).fold(false)(_.get(from).fold(false)(!_.distance.isInfinity))
+  }
+
+  // FIXME: buggy implementation
   def findNearestClusters(paths: StringDictionary[StringDictionary[Path]],
                           clusterIds: Seq[String],
                           currentNodeId: String): js.Array[String] = {
-    val result = collection.mutable.Set.empty[String]
-
-    def isReachable(from: String, to: String): Boolean = {
-      paths.get(from).flatMap(_.get(to)).fold(false)(!_.distance.isInfinity)
-    }
-
-    for (clusterId <- clusterIds) {
-      if (isReachable(currentNodeId, clusterId)) {
-        result.find(isReachable(clusterId, _)) match {
-          case Some(existingClusterId) =>
-            result -= existingClusterId
-            result += clusterId
-          case None =>
-            if (!result.exists(isReachable(_, clusterId))) {
-              result += clusterId
-            }
-        }
+    val related = clusterIds.filter(isReachable(paths, currentNodeId, _))
+    val nearest = related.filterNot { clusterId =>
+      related.exists { existingClusterId =>
+        isReachable(paths, existingClusterId, clusterId) && !isReachable(paths, clusterId, existingClusterId)
       }
     }
-    result.toJSArray
+    nearest.toJSArray
   }
 
   /** Returns dependent paths in the `graph` for `clusterIds`.

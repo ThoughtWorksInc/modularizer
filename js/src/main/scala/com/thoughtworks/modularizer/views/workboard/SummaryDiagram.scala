@@ -130,14 +130,14 @@ class SummaryDiagram(simpleGraph: Graph,
       )
     }
     ClusteringReport
-      .findNearestClusters(report.dependencyPaths, report.clusterIds :+ "Utilities", "Facades")
+      .findNearestClusters(report.dependentPaths, report.clusterIds :+ "Utilities", "Facades")
       .foreach(g.setEdge("Facades", _))
     ClusteringReport
-      .findNearestClusters(report.dependentPaths, report.clusterIds, "Utilities")
+      .findNearestClusters(report.dependencyPaths, report.clusterIds, "Utilities")
       .foreach(g.setEdge(_, "Utilities"))
 
     for (from <- clusters) {
-      val dependencyClusterIds = ClusteringReport.findNearestClusters(report.dependencyPaths, clusters.collect {
+      val dependencyClusterIds = ClusteringReport.findNearestClusters(report.dependentPaths, clusters.collect {
         case to if to.parent != from.parent =>
           to.parent
       }, from.parent)
