@@ -1,7 +1,6 @@
-//@import "lib/bootstrap/scss/_functions";
-//@import "lib/bootstrap/scss/variables";
+@import "lib/bootstrap/scss/functions";
+@import "lib/bootstrap/scss/variables";
 //@import "lib/bootstrap/scss/mixins";
-
 
 body {
   height: 100vh;
@@ -38,4 +37,8 @@ body {
     position: absolute;
     top: 10px;
     left: 0;
+}
+
+.dropdown-menu {
+  z-index: $zindex-sticky + 1;
 }
