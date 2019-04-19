@@ -9,6 +9,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.ResetCommand.ResetType
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.lib.Constants._
+import scala.collection.JavaConverters._
 
 import scala.concurrent.ExecutionContext
 
@@ -32,6 +33,16 @@ object GitPool extends StrictLogging {
               reset()
                 .setMode(ResetType.HARD)
                 .call()
+
+              val deletableBranches = for {
+                branch <- branchList().call().asScala
+                if branch.getName != getRepository.getFullBranch
+              } yield branch.getName
+              branchDelete()
+                .setBranchNames(deletableBranches: _*)
+                .setForce(true)
+                .call()
+
             } finally {
               queue.offer(this).ensuring(_ == true)
               logger.debug(s"Released git work tree at ${getRepository.getWorkTree}")

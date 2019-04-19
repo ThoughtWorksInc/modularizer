@@ -1,6 +1,7 @@
 package com.thoughtworks.modularizer.server
 
 import java.nio.file.{Files, Paths}
+import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -17,7 +18,7 @@ import com.thoughtworks.akka.http.WebJarsSupport._
 import com.thoughtworks.dsl.Dsl
 import com.thoughtworks.dsl.Dsl.!!
 import com.thoughtworks.dsl.keywords.NullSafe._
-import com.thoughtworks.dsl.keywords.{Return, Await, Using}
+import com.thoughtworks.dsl.keywords.{Await, Return, Using}
 import com.typesafe.scalalogging.Logger
 import io.github.lhotari.akka.http.health.HealthEndpoint._
 import org.eclipse.jgit.api.ResetCommand.ResetType
@@ -138,11 +139,11 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
                         logger.debug(s"Uploading file to $parentPath on branch $branch")
 
                         forceCheckoutBranch { refOption: Option[Ref] =>
-                          logger.debug(s"Checked out ${refOption}")
+                          logger.debug(s"Checked out $refOption")
                           val oldRef = refOption.getOrElse {
                             git
                               .checkout()
-                              .setName(branch)
+                              .setName(UUID.randomUUID().toString)
                               .setOrphan(true)
                               .setForced(true)
                               .setForceRefUpdate(true)
@@ -171,13 +172,17 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
                                 .commit()
                                 .setMessage(s"Update $parentPath on branch $branch")
                                 .setAuthor("Modularizer", "atryyang@thoughtworks.com")
+                                .setAllowEmpty(true)
                                 .call()
+
+                              logger.debug(s"Commit ${commit.toObjectId.name} created")
 
                               val uploadResults = git
                                 .push()
                                 .setRemote(configuration.gitUri())
                                 .setCredentialsProvider(credentialsProviderOption.orNull)
-                                .setRefSpecs(new RefSpec().setSourceDestination(HEAD, R_HEADS + branch))
+                                .setRefSpecs(new RefSpec().setSourceDestination(commit.toObjectId.name,
+                                                                                s"$R_HEADS$branch"))
                                 .call()
                                 .asScala
 
