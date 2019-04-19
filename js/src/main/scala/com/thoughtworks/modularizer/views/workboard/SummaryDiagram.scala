@@ -1,9 +1,10 @@
 package com.thoughtworks.modularizer.views.workboard
 import com.thoughtworks.binding.Binding._
+import com.thoughtworks.binding.dom.Runtime.TagsAndTags2
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import org.scalablytyped.runtime.StringDictionary
-import org.scalajs.dom.raw.Node
+import org.scalajs.dom.raw.{Node, SVGPreserveAspectRatio}
 import org.scalajs.dom.{Event, window}
 import typings.d3DashSelectionLib.d3DashSelectionMod.{BaseType, Selection}
 import typings.d3Lib.d3Mod
@@ -12,7 +13,11 @@ import typings.dagreLib.Anon_Compound
 import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
 import typings.dagreLib.dagreMod.{GraphLabel, Label}
 import typings.graphlibLib.graphlibMod.{Graph, algNs}
+import typings.graphlibLib.graphlibMod.Path
+import com.thoughtworks.modularizer.utilities._
+import scalatags.JsDom
 
+import scala.annotation.tailrec
 import scala.collection.immutable
 
 private object SummaryDiagram {
@@ -47,18 +52,6 @@ class SummaryDiagram(simpleGraph: Graph,
 
   @dom
   val view: Binding[Node] = {
-    val render = dagreDashD3Mod.^.render.newInstance0()
-    val svgContainer = <div class="svg-container"></div>
-    val svgSelection = d3Mod.^.select(svgContainer)
-      .append("svg")
-      .attr("preserveAspectRatio", "xMinYMin meet")
-      .attr("viewBox", "0 0 400 600")
-      .classed("svg-content-responsive", true)
-      .asInstanceOf[Selection[_, _, BaseType, _]]
-    val g = buildGraphD3.bind
-    window.requestAnimationFrame { _ =>
-      render(svgSelection, g)
-    }
 
     <div class="flex-grow-1 col-auto">
       <button
@@ -70,8 +63,27 @@ class SummaryDiagram(simpleGraph: Graph,
           clusteringRule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
         }
       ><span class="fas fa-save"></span></button>
-      {svgContainer}
+      {
+        val svg = <svg
+          style:width="100%" style:height="100%"
+          preserveAspectRatio:baseVal:align={SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMID}
+          preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
+        ></svg>
+        val render = dagreDashD3Mod.^.render.newInstance0()
+        val g = buildGraphD3.bind
+        window.requestAnimationFrame { _ =>
+          render(d3Mod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], g)
+          val boundBox = svg.getBBox()
+          svg.viewBox.baseVal.x = boundBox.x
+          svg.viewBox.baseVal.y = boundBox.y
+          svg.viewBox.baseVal.width = boundBox.width
+          svg.viewBox.baseVal.height = boundBox.height
+        }
+        svg
+      }
     </div>
+//    {svgContainer}
+
   }
 
   def buildGraphD3: Binding[GraphD3] = Binding {
@@ -80,47 +92,101 @@ class SummaryDiagram(simpleGraph: Graph,
 
     val g =
       new GraphD3(new Anon_Compound {
-//        compound = true
+        compound = true
         directed = true
         multigraph = false
       })
 
     g.setGraph(new GraphLabel {
-//      compound = true
+      compound = true
     })
 
     g.setNode(
       "Utilities",
       Label(
         StringDictionary(
-          "label" -> "Utilities"
+          "label" -> "",
+          "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
         )
       )
     )
     g.setNode(
-      "Facades",
+      "label_Utilities",
       Label(
         StringDictionary(
-          "label" -> "Facades"
+          "rank" -> "max",
+          "label" -> "Utilities",
+//            "clusterLabelPos" -> "top",
+          "style" -> "stroke: none; fill-opacity: 0"
         )
       )
     )
+    g.setParent("label_Utilities", "Utilities")
+
+    g.setNode(
+      "Facades",
+      Label(
+        StringDictionary(
+          "label" -> "",
+          "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
+        )
+      )
+    )
+
+    g.setNode(
+      "label_Facades",
+      Label(
+        StringDictionary(
+          "rank" -> "max",
+          "label" -> "Facades",
+//            "clusterLabelPos" -> "top",
+          "style" -> "stroke: none; fill-opacity: 0"
+        )
+      )
+    )
+    g.setParent("label_Facades", "Facades")
     for (cluster <- clusters) {
+      val id = cluster.parent
       g.setNode(
-        cluster.parent,
+        id,
         Label(
           StringDictionary(
-            "label" -> cluster.parent,
+            "label" -> "",
 //            "clusterLabelPos" -> "top",
-//            "style" -> "fill: #ffd47f",
+            "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
           )
         )
       )
+
+      val labelId = s"label_$id"
+      g.setNode(
+        labelId,
+        Label(
+          StringDictionary(
+            "rank" -> "max",
+            "label" -> id,
+//            "clusterLabelPos" -> "top",
+            "style" -> "stroke: none; fill-opacity: 0"
+          )
+        )
+      )
+      g.setParent(labelId, id)
+
 //      for (child <- cluster.children) {
 //        g.setNode(child, Label(StringDictionary("label" -> child)))
 //        g.setParent(child, cluster.parent)
 //      }
     }
+//
+//    g.setNode("xxx",
+//              Label(
+//                StringDictionary(
+//                  "label" -> "xxx"
+//                )
+//              ))
+//
+//    g.setParent("xxx", "a")
+//
     g.setDefaultEdgeLabel { edge =>
       Label(
         StringDictionary(
@@ -129,12 +195,52 @@ class SummaryDiagram(simpleGraph: Graph,
         // TODO:
       )
     }
-    ClusteringReport
-      .findNearestClusters(report.dependentPaths, report.clusterIds :+ "Utilities", "Facades")
-      .foreach(g.setEdge("Facades", _))
-    ClusteringReport
-      .findNearestClusters(report.dependencyPaths, report.clusterIds, "Utilities")
-      .foreach(g.setEdge(_, "Utilities"))
+
+    def addKeyPath(paths: StringDictionary[StringDictionary[Path]],
+                   from: String,
+                   clusterId: String,
+                   setEdge: (String, String) => Unit): Unit = {
+      val distancesToCluster = paths(clusterId)
+
+      @tailrec
+      def loop(from: String): Unit = {
+        if (from != clusterId) {
+          val predecessor = distancesToCluster(from).predecessor
+          val currentParent = report.compoundGraph.parent(from)
+          if (currentParent.isDefined) {
+            g.setNode(from,
+                      Label(
+                        StringDictionary(
+                          "label" -> from,
+                          //            "clusterLabelPos" -> "top",
+                          //            "style" -> "fill: #ffd47f",
+                        )
+                      ))
+            g.setParent(from, currentParent.get)
+            if (report.compoundGraph.parent(predecessor).isDefined) {
+              setEdge(predecessor, from)
+            }
+          }
+          loop(predecessor)
+        }
+      }
+
+      loop(from)
+    }
+
+    for (clusterIdUsedByFacades <- ClusteringReport
+           .findNearestClusters(report.dependentPaths, report.clusterIds :+ "Utilities", "Facades")) {
+      addKeyPath(report.dependentPaths, "Facades", clusterIdUsedByFacades, { (from, to) =>
+        g.setEdge(from, to)
+      })
+    }
+
+    for (clusterIdThatDependsOnUtilities <- ClusteringReport
+           .findNearestClusters(report.dependencyPaths, report.clusterIds, "Utilities")) {
+      addKeyPath(report.dependencyPaths, "Utilities", clusterIdThatDependsOnUtilities, { (to, from) =>
+        g.setEdge(from, to)
+      })
+    }
 
     for (from <- clusters) {
       val dependencyClusterIds = ClusteringReport.findNearestClusters(report.dependentPaths, clusters.collect {
@@ -143,7 +249,9 @@ class SummaryDiagram(simpleGraph: Graph,
       }, from.parent)
 
       for (dependencyClusterId <- dependencyClusterIds) {
-        g.setEdge(from.parent, dependencyClusterId)
+        addKeyPath(report.dependentPaths, from.parent, dependencyClusterId, { (from, to) =>
+          g.setEdge(from, to)
+        })
       }
     }
 

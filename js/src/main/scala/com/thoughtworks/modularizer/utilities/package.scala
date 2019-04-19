@@ -8,6 +8,8 @@ import com.thoughtworks.dsl.Dsl.!!
 import org.scalajs.dom.raw.HTMLInputElement
 import com.thoughtworks.dsl.Dsl
 import com.thoughtworks.binding.LatestEvent
+import com.thoughtworks.binding.dom.Runtime.TagsAndTags2
+import scalatags.JsDom
 
 /**
   * @author 杨博 (Yang Bo)
@@ -35,5 +37,7 @@ package object utilities {
   //     }
   //   }
   // }
+
+  implicit final class SvgTags(x: TagsAndTags2.type) extends JsDom.Cap with scalatags.jsdom.SvgTags
 
 }
