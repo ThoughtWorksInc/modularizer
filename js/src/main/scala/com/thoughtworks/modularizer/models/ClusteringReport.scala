@@ -54,30 +54,30 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
      */
     for (currentNodeId <- compoundGraph.nodes()) {
       if (notCluster(currentNodeId) && notAssignedToCluster(currentNodeId)) {
-        findSingleNearestCluster(dependentPaths, clusterIds, currentNodeId) match {
-          case NearestCluster.One(clusterId) =>
-            findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
-              case NearestCluster.One(clusterId2) =>
+        findNearestClusters(dependentPaths, clusterIds, currentNodeId) match {
+          case Seq(clusterId) =>
+            findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
+              case Seq(clusterId2) =>
                 compoundGraph.setParent(currentNodeId, js.Array(clusterId, clusterId2).minBy(priorities))
-              case NearestCluster.Zero | NearestCluster.Multiple =>
+              case _ =>
                 compoundGraph.setParent(currentNodeId, clusterId)
             }
-          case NearestCluster.Zero =>
-            findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
-              case NearestCluster.One(clusterId) =>
+          case Seq() =>
+            findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
+              case Seq(clusterId) =>
                 compoundGraph.setParent(currentNodeId, clusterId)
-              case NearestCluster.Zero =>
+              case Seq() =>
                 compoundGraph.setParent(currentNodeId, "Facades")
-              case NearestCluster.Multiple =>
+              case _ =>
                 compoundGraph.setParent(currentNodeId, "Utilities")
             }
-          case NearestCluster.Multiple =>
-            findSingleNearestCluster(dependencyPaths, clusterIds, currentNodeId) match {
-              case NearestCluster.One(clusterId) =>
+          case _ =>
+            findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
+              case Seq(clusterId) =>
                 compoundGraph.setParent(currentNodeId, clusterId)
-              case NearestCluster.Zero =>
+              case Seq() =>
                 compoundGraph.setParent(currentNodeId, "Facades")
-              case NearestCluster.Multiple =>
+              case _ =>
             }
         }
       }
@@ -137,7 +137,7 @@ object ClusteringReport {
     *          }}}
     *
     */
-  @deprecated("Use [[findNearestClusters]] instead", "")
+  @deprecated("Use [[findNearestClusters]] instead", "0.1.0")
   private[modularizer] def findSingleNearestCluster(
       paths: StringDictionary[StringDictionary[Path]],
       clusterIds: js.Array[String],
@@ -161,14 +161,13 @@ object ClusteringReport {
   // FIXME: buggy implementation
   def findNearestClusters(paths: StringDictionary[StringDictionary[Path]],
                           clusterIds: Seq[String],
-                          currentNodeId: String): js.Array[String] = {
-    val related = clusterIds.filter(isReachable(paths, currentNodeId, _))
-    val nearest = related.filterNot { clusterId =>
-      related.exists { existingClusterId =>
+                          currentNodeId: String): Seq[String] = {
+    val allReachableClusterIds = clusterIds.filter(isReachable(paths, currentNodeId, _))
+    allReachableClusterIds.filterNot { clusterId =>
+      allReachableClusterIds.exists { existingClusterId =>
         isReachable(paths, existingClusterId, clusterId) && !isReachable(paths, clusterId, existingClusterId)
       }
     }
-    nearest.toJSArray
   }
 
   /** Returns dependent paths in the `graph` for `clusterIds`.
