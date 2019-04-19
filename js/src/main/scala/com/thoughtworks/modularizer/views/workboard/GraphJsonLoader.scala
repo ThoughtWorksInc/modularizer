@@ -27,12 +27,9 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
     )
   private val graphBody: Binding[Option[Thenable[Graph]]] = Binding {
     graphResponse.bind match {
-      case Some(Right(response)) =>
-        response.status match {
-          case _ if response.ok =>
-            val graphJsonPromise = response.json().asInstanceOf[js.Promise[js.Object]]
-            Some(graphJsonPromise.`then`[Graph](graphlibMod.jsonNs.read(_)))
-        }
+      case Some(Right(response)) if response.ok =>
+        val graphJsonPromise = response.json().asInstanceOf[js.Promise[js.Object]]
+        Some(graphJsonPromise.`then`[Graph](graphlibMod.jsonNs.read(_)))
       case _ =>
         None
     }

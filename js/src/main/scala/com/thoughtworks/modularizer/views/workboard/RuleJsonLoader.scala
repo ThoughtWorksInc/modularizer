@@ -31,13 +31,8 @@ class RuleJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
 
   val eTag: Binding[Option[String]] = Binding {
     ruleResponse.bind match {
-      case Some(Right(response)) =>
-        response.status match {
-          case 404 =>
-            None
-          case _ if response.ok =>
-            Option(response.headers.get("ETag").asInstanceOf[String])
-        }
+      case Some(Right(response)) if response.ok =>
+        Option(response.headers.get("ETag").asInstanceOf[String])
       case _ =>
         None
     }
