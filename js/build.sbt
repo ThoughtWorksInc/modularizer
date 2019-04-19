@@ -19,6 +19,8 @@ libraryDependencies += "com.thoughtworks.binding" %%% "jsonhashroute" % "0.2.0"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "latestevent" % "0.2.0+12-59d56a67"
 
+libraryDependencies += "com.thoughtworks.binding" %%% "latestjqueryevent" % "0.1.0+1-90457bcc"
+
 libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.1.0"

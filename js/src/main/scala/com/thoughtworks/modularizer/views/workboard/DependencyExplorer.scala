@@ -1,10 +1,13 @@
 package com.thoughtworks.modularizer.views.workboard
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
-import com.thoughtworks.binding.{Binding, LatestEvent, dom}
+import com.thoughtworks.binding.{Binding, LatestEvent, LatestJQueryEvent, dom}
+import com.thoughtworks.binding.bindable._
 import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import DraftCluster._
 import com.thoughtworks.modularizer.utilities._
-import org.scalajs.dom.raw.{Event, HTMLLIElement, Node, UIEvent}
+import org.scalajs.dom.raw._
+import org.scalajs.dom._
+import org.scalajs.jquery.{JQuery, JQueryEventObject, jQuery}
 import typings.graphlibLib.graphlibMod.Graph
 
 import scala.collection.immutable
@@ -27,6 +30,23 @@ object DependencyExplorer {
       <a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>
     </div>
 
+  }
+
+  @dom
+  private def clusterTag(draftCluster: DraftCluster): Binding[Node] = {
+    <span
+      class="badge badge-secondary"
+      style:backgroundColor={draftCluster.color.bind.backgroundColor}
+      style:color={draftCluster.color.bind.textColor}>{
+      draftCluster.name.bind
+    }</span>
+  }
+
+  def isShown(dropdown: Element): Binding[Boolean] = Binding {
+    val dropdownJQuery = jQuery(dropdown)
+    val latestHiddenEvent = new LatestJQueryEvent(dropdownJQuery, "hidden.bs.dropdown").bind
+    val latestShownEventAfterLatestHidden = new LatestJQueryEvent(dropdownJQuery, "shown.bs.dropdown").bind
+    dropdownJQuery.hasClass("show")
   }
 
   @dom
@@ -68,7 +88,7 @@ object DependencyExplorer {
                 }
               }
               Constants(
-                <div class="dropdown">
+                <div id="unlockedDropdown" class="dropdown">
                   <button
                     type="button"
                     data:data-toggle="dropdown"
@@ -85,29 +105,73 @@ object DependencyExplorer {
                       }
                     }
                   </button>
-                  <div class="dropdown-menu">{
-                    for (draftCluster <- draftClusters) yield {
-                      <button
-                        class="dropdown-item"
-                        type="button"
-                        onclick={ _: Event =>
-                          draftCluster.nodeIds.value += nodeId
+                  <div class="dropdown-menu">
+                    {
+                      if (isShown(unlockedDropdown).bind) {
+                        for (draftCluster <- draftClusters) yield {
+                          <button
+                            class="dropdown-item"
+                            type="button"
+                            onclick={ _: Event =>
+                              draftCluster.nodeIds.value += nodeId
+                            }
+                          >
+                            Assign to {clusterTag(draftCluster).bind}
+                          </button>
                         }
-                      >
-                        Assign to
-                        <span
-                          class="badge badge-secondary"
-                          style:backgroundColor={draftCluster.color.bind.backgroundColor}
-                          style:color={draftCluster.color.bind.textColor}>{
-                          draftCluster.name.bind
-                        }</span>
-                      </button>
+                        val requiredClusterTags = for {
+                          draftCluster <- draftClusters
+                          if ClusteringReport.isReachable(clusteringReport.bind.dependentPaths, nodeId, draftCluster.name.bind)
+                        } yield clusterTag(draftCluster).bind
+                        val usedByClusterTags = for {
+                          draftCluster <- draftClusters
+                          if ClusteringReport.isReachable(clusteringReport.bind.dependencyPaths, nodeId, draftCluster.name.bind)
+                        } yield clusterTag(draftCluster).bind
+                        Constants(
+                          if (requiredClusterTags.isEmpty.bind) {
+                            Constants.empty
+                          } else {
+                            Constants(
+                              <button type="button" class="dropdown-item" disabled="disabled">
+                                depends on { requiredClusterTags.bindSeq }
+                              </button>
+                            )
+                          },
+                          if (usedByClusterTags.isEmpty.bind) {
+                            Constants.empty
+                          } else {
+                            Constants(
+                              <button type="button" class="dropdown-item" disabled="disabled">
+                                is used by { usedByClusterTags.bindSeq }
+                              </button>
+                            )
+                          },
+                          if (requiredClusterTags.isEmpty.bind && usedByClusterTags.isEmpty.bind) {
+                            Constants.empty
+                          } else {
+                            Constants(<div class="dropdown-divider"></div>)
+                          },
+                          for (draftCluster <- draftClusters) yield {
+                            <button
+                              class="dropdown-item"
+                              type="button"
+                              onclick={ _: Event =>
+                                draftCluster.nodeIds.value += nodeId
+                              }
+                            >
+                              Assign to {clusterTag(draftCluster).bind}
+                            </button>
+                          }
+                        ).flatMap(identity)
+                      } else {
+                        Constants()
+                      }
                     }
-                  }</div>
+                  </div>
                 </div>
               )
             case _ =>
-              for (currentCluster <- currentClusterSeq) yield <div class="dropdown">
+              for (currentCluster <- currentClusterSeq) yield <div class="dropdown" id="lockedDropdown">
                 <button
                   type="button"
                   data:data-toggle="dropdown"
@@ -117,39 +181,41 @@ object DependencyExplorer {
                   <span class="fas fa-lock"></span>
                   { currentCluster.name.bind }
                 </button>
-
-                <div class="dropdown-menu">{
-                  for (draftCluster <- draftClusters) yield {
-                    if (draftCluster eq currentCluster) {
-                      <button
-                        class="dropdown-item"
-                        type="button"
-                        onclick={ _: Event =>
-                          currentCluster.nodeIds.value -= nodeId
+                <div class="dropdown-menu text-muted">
+                  {
+                    if (isShown(lockedDropdown).bind) {
+                      for (draftCluster <- draftClusters) yield {
+                        if (draftCluster eq currentCluster) {
+                          <button
+                            class="dropdown-item"
+                            type="button"
+                            onclick={ _: Event =>
+                              currentCluster.nodeIds.value -= nodeId
+                            }
+                          >
+                            Unassign from
+                            <span class="badge badge-secondary" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>{
+                              draftCluster.name.bind
+                            }</span>
+                          </button>
+                        } else {
+                          <button
+                            class="dropdown-item"
+                            type="button"
+                            onclick={ _: Event =>
+                              currentCluster.nodeIds.value -= nodeId
+                              draftCluster.nodeIds.value += nodeId
+                            }
+                          >
+                            Assign to {clusterTag(draftCluster).bind}
+                          </button>
                         }
-                      >
-                        Unassign from
-                        <span class="badge badge-secondary" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>{
-                          draftCluster.name.bind
-                        }</span>
-                      </button>
+                      }
                     } else {
-                      <button
-                        class="dropdown-item"
-                        type="button"
-                        onclick={ _: Event =>
-                          currentCluster.nodeIds.value -= nodeId
-                          draftCluster.nodeIds.value += nodeId
-                        }
-                      >
-                        Assign to
-                        <span class="badge badge-secondary" style:backgroundColor={draftCluster.color.bind.backgroundColor} style:color={draftCluster.color.bind.textColor}>{
-                          draftCluster.name.bind
-                        }</span>
-                      </button>
+                      Constants.empty
                     }
                   }
-                }</div>
+                </div>
               </div>
           }
         }
@@ -174,7 +240,7 @@ object DependencyExplorer {
       <!-- No dependencies -->
     } else {
       <details id="nodeDetails">
-        <summary>Dependents</summary>
+        <summary>is used by ...</summary>
         {
           if ({
             val _ = LatestEvent.toggle(nodeDetails).bind
@@ -204,7 +270,7 @@ object DependencyExplorer {
       <!-- No dependencies -->
     } else {
       <details id="nodeDetails">
-        <summary>Dependencies</summary>
+        <summary>depends on ...</summary>
         {
           val _ = LatestEvent.toggle(nodeDetails).bind
           if (nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]) {
