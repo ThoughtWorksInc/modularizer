@@ -94,9 +94,14 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
 object ClusteringReport {
   private val EmptyArray = new js.Array[Edge](0)
 
-  /** Returns the nearest dependent of `currentNodeId`.
+  def isReachable(paths: StringDictionary[StringDictionary[Path]], from: String, clusterId: String): Boolean = {
+    paths.get(clusterId).fold(false)(_.get(from).fold(false)(!_.distance.isInfinity))
+  }
+
+  /** Returns the nearest reachable nodes of `currentNodeId`.
     *
-    * @example Nearest dependents in a graph of A -> B -> C, A -> C and B -> D,
+    * @example Find the nearest reachable nodes in the graph of A -> B -> C, A -> C and B -> D,
+    *
     *          {{{
     *          import scala.scalajs.js
     *          import typings.graphlibLib.graphlibMod._
@@ -129,36 +134,14 @@ object ClusteringReport {
     *            ),
     *          )
     *
-    *          findSingleNearestCluster(paths, js.Array("B", "C", "D"), "A") should be(NearestCluster.Zero)
-    *          findSingleNearestCluster(paths, js.Array("A", "C", "D"), "B") should be(NearestCluster.One("A"))
-    *          findSingleNearestCluster(paths, js.Array("B", "A", "D"), "C") should be(NearestCluster.One("B"))
-    *          findSingleNearestCluster(paths, js.Array("B", "C", "A"), "D") should be(NearestCluster.One("B"))
-    *          findSingleNearestCluster(paths, js.Array("C", "B", "A", "D"), "C") should be(NearestCluster.One("C"))
+    *          findNearestClusters(paths, js.Array("B", "C", "D"), "A") should be(Seq.empty)
+    *          findNearestClusters(paths, js.Array("A", "C", "D"), "B") should be(Seq("A"))
+    *          findNearestClusters(paths, js.Array("B", "A", "D"), "C") should be(Seq("B"))
+    *          findNearestClusters(paths, js.Array("B", "C", "A"), "D") should be(Seq("B"))
+    *          findNearestClusters(paths, js.Array("C", "B", "A", "D"), "C") should be(Seq("C"))
     *          }}}
     *
     */
-  @deprecated("Use [[findNearestClusters]] instead", "0.1.0")
-  private[modularizer] def findSingleNearestCluster(
-      paths: StringDictionary[StringDictionary[Path]],
-      clusterIds: js.Array[String],
-      currentNodeId: String
-  ): NearestCluster = {
-    val result = findNearestClusters(paths, clusterIds, currentNodeId)
-    result.length match {
-      case 0 =>
-        NearestCluster.Zero
-      case 1 =>
-        NearestCluster.One(result(0))
-      case _ =>
-        NearestCluster.Multiple
-    }
-  }
-
-  def isReachable(paths: StringDictionary[StringDictionary[Path]], from: String, clusterId: String): Boolean = {
-    paths.get(clusterId).fold(false)(_.get(from).fold(false)(!_.distance.isInfinity))
-  }
-
-  // FIXME: buggy implementation
   def findNearestClusters(paths: StringDictionary[StringDictionary[Path]],
                           clusterIds: Seq[String],
                           currentNodeId: String): Seq[String] = {
@@ -308,18 +291,6 @@ object ClusteringReport {
     val parentEdges = parentAsEdges(graph, currentNodeId)
     val outEdges = graph.outEdges(currentNodeId).getOrElse(EmptyArray)
     childrenEdges.concat(parentEdges, outEdges)
-  }
-
-  private[modularizer] sealed trait NearestCluster
-
-  private[modularizer] object NearestCluster {
-
-    case object Zero extends NearestCluster
-
-    case class One(clusterId: String) extends NearestCluster
-
-    case object Multiple extends NearestCluster
-
   }
 
 }
