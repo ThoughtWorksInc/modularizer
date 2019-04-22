@@ -194,7 +194,7 @@ class SummaryDiagram(simpleGraph: Graph,
                       ))
             g.setParent(from, currentParent.get)
             if (report.compoundGraph.parent(predecessor).isDefined) {
-              setEdge(predecessor, from)
+              setEdge(from, predecessor)
             }
           }
           loop(predecessor)
