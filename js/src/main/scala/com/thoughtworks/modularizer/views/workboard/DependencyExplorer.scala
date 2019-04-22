@@ -310,6 +310,7 @@ object DependencyExplorer {
     case object Root extends DependencyExplorerTab
     case object Leaf extends DependencyExplorerTab
     case object Selection extends DependencyExplorerTab
+    case object Search extends DependencyExplorerTab
   }
 
   @dom
@@ -325,6 +326,7 @@ object DependencyExplorer {
           { DependencyExplorerTab.Root.navItem(currentTab).bind }
           { DependencyExplorerTab.Leaf.navItem(currentTab).bind }
           { DependencyExplorerTab.Selection.navItem(currentTab).bind }
+          { DependencyExplorerTab.Search.navItem(currentTab).bind }
         </ul>
         <div class="card-body">{
           currentTab.bind match {
@@ -339,6 +341,23 @@ object DependencyExplorer {
             case DependencyExplorerTab.Selection =>
               selectedNodeIds.flatMapBinding { nodeId =>
                 neighborList(graph, clusteringReport, nodeId, draftClusters)
+              }
+            case DependencyExplorerTab.Search =>
+              {
+                val filterInput = <input type="input" class="form-control" placeholder="Search..."/>
+                Constants(
+                  filterInput,
+                  <div>{
+                    Constants(graph.nodes(): _*)
+                      .withFilter { nodeName =>
+                        val _ = LatestEvent.change(filterInput).bind
+                        filterInput.value != "" && nodeName.contains(filterInput.value)
+                      }
+                      .flatMapBinding { nodeId =>
+                        neighborList(graph, clusteringReport, nodeId, draftClusters)
+                      }
+                  }</div>
+                )
               }
           }
         }</div>
