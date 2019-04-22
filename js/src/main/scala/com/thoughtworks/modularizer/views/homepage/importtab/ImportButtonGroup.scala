@@ -54,7 +54,17 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
       case Some(future) =>
         future.bind match {
           case Some(Success(graph)) =>
-            Some(graph)
+            uploading.bind match {
+              case Some(thenable) => 
+                thenable.bind match {
+                  case Some(Right(response)) => 
+                    Some(graph)
+                  case _ =>
+                    None
+                }
+              case _ =>
+                None
+            }
           case _ =>
             None
         }
