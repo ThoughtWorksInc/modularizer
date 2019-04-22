@@ -20,28 +20,6 @@ import scalatags.JsDom
 import scala.annotation.tailrec
 import scala.collection.immutable
 
-private object SummaryDiagram {
-  final class ClusterMountPoint(graphD3: GraphD3, cluster: Binding[String]) extends SingleMountPoint[String](cluster) {
-
-    private var clusterNameOption: Option[String] = None
-
-    override def unmount(): Unit = {
-      clusterNameOption.foreach(graphD3.removeNode)
-      clusterNameOption = None
-      super.unmount()
-    }
-
-    def set(clusterName: String): Unit = {
-      clusterNameOption.foreach(graphD3.removeNode)
-      graphD3.setNode(clusterName,
-                      Label(
-                        // TODO:
-                      ))
-      this.clusterNameOption = Some(clusterName)
-    }
-  }
-}
-
 /**
   * @author 杨博 (Yang Bo)
   */
@@ -50,9 +28,9 @@ class SummaryDiagram(simpleGraph: Graph,
                      clusteringRule: Var[ClusteringRule],
                      clusteringReport: Binding[ClusteringReport]) {
 
+  import org.scalajs.dom.svg
   @dom
   val view: Binding[Node] = {
-
     <div class="flex-grow-1 col-auto">
       <button
         type="button"
@@ -70,20 +48,15 @@ class SummaryDiagram(simpleGraph: Graph,
           preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
         ></svg>
         val render = dagreDashD3Mod.^.render.newInstance0()
-        val g = buildGraphD3.bind
-        window.requestAnimationFrame { _ =>
-          render(d3Mod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], g)
-          val boundBox = svg.getBBox()
-          svg.viewBox.baseVal.x = boundBox.x
-          svg.viewBox.baseVal.y = boundBox.y
-          svg.viewBox.baseVal.width = boundBox.width
-          svg.viewBox.baseVal.height = boundBox.height
-        }
+        render(d3Mod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], buildGraphD3.bind)
+        val boundBox = svg.getBBox()
+        svg.viewBox.baseVal.x = boundBox.x
+        svg.viewBox.baseVal.y = boundBox.y
+        svg.viewBox.baseVal.width = boundBox.width
+        svg.viewBox.baseVal.height = boundBox.height
         svg
       }
     </div>
-//    {svgContainer}
-
   }
 
   def buildGraphD3: Binding[GraphD3] = Binding {
