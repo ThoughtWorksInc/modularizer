@@ -245,6 +245,8 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
             }
           }
         } ~ createDefaultHealthRoute()
+      } ~ pathSingleSlash {
+        getFromResource(webJarAssetLocator.getFullPath("index.html"))
       } ~ sbtWeb
     }
   }
