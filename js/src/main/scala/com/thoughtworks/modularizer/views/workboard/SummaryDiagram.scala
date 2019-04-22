@@ -48,12 +48,15 @@ class SummaryDiagram(simpleGraph: Graph,
           preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
         ></svg>
         val render = dagreDashD3Mod.^.render.newInstance0()
-        render(d3Mod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], buildGraphD3.bind)
-        val boundBox = svg.getBBox()
-        svg.viewBox.baseVal.x = boundBox.x
-        svg.viewBox.baseVal.y = boundBox.y
-        svg.viewBox.baseVal.width = boundBox.width
-        svg.viewBox.baseVal.height = boundBox.height
+        val graphD3 = buildGraphD3.bind
+        window.requestAnimationFrame { _ =>
+          render(d3Mod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
+          val boundBox = svg.getBBox()
+          svg.viewBox.baseVal.x = boundBox.x
+          svg.viewBox.baseVal.y = boundBox.y
+          svg.viewBox.baseVal.width = boundBox.width
+          svg.viewBox.baseVal.height = boundBox.height
+        }
         svg
       }
     </div>
