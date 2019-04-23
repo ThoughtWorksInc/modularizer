@@ -29,7 +29,6 @@ object DependencyExplorer {
       <a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>
       <a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>
     </div>
-
   }
 
   @dom
@@ -306,6 +305,34 @@ object DependencyExplorer {
     }
   }
 
+  private final val PageSize = 20
+
+  @dom
+  private def pagedNodes(graph: Graph,
+                         draftClusters: Vars[DraftCluster],
+                         clusteringReport: Binding[ClusteringReport],
+                         nodeIds: Iterable[String]): Binding[Node] = {
+    val (page, rest) = nodeIds.splitAt(PageSize)
+    <div>{
+        Constants(page.toSeq: _*).flatMapBinding { nodeId =>
+          neighborList(graph, clusteringReport, nodeId, draftClusters)
+        }
+    }{
+      if (rest.isEmpty) {
+        <!-- No more node to show -->
+      } else {
+        val showMore = Var(false)
+        if (showMore.bind) {
+          pagedNodes(graph, draftClusters, clusteringReport, rest).bind
+        } else {
+          <button type="button" class="btn btn-link btn-block" onclick={ _: Event =>
+            showMore.value = true
+          }>Show more</button>
+        }
+      }
+    }</div>
+  }
+
   object DependencyExplorerTab {
     case object Root extends DependencyExplorerTab
     case object Leaf extends DependencyExplorerTab
@@ -331,34 +358,26 @@ object DependencyExplorer {
         <div class="card-body">{
           currentTab.bind match {
             case DependencyExplorerTab.Root =>
-              Constants(graph.sources(): _*).flatMapBinding { nodeId =>
-                neighborList(graph, clusteringReport, nodeId, draftClusters)
-              }
+              pagedNodes(graph, draftClusters, clusteringReport, graph.sources()).bindSeq
+              // Constants(graph.sources(): _*).flatMapBinding { nodeId =>
+              //   neighborList(graph, clusteringReport, nodeId, draftClusters)
+              // }
             case DependencyExplorerTab.Leaf =>
-              Constants(graph.sinks(): _*).flatMapBinding { nodeId =>
-                neighborList(graph, clusteringReport, nodeId, draftClusters)
-              }
+              pagedNodes(graph, draftClusters, clusteringReport, graph.sinks()).bindSeq
             case DependencyExplorerTab.Selection =>
               selectedNodeIds.flatMapBinding { nodeId =>
                 neighborList(graph, clusteringReport, nodeId, draftClusters)
               }
             case DependencyExplorerTab.Search =>
-              {
-                val filterInput = <input type="input" class="form-control" placeholder="Search..."/>
-                Constants(
-                  filterInput,
-                  <div>{
-                    Constants(graph.nodes(): _*)
-                      .withFilter { nodeName =>
-                        val _ = LatestEvent.change(filterInput).bind
-                        filterInput.value != "" && nodeName.contains(filterInput.value)
-                      }
-                      .flatMapBinding { nodeId =>
-                        neighborList(graph, clusteringReport, nodeId, draftClusters)
-                      }
-                  }</div>
-                )
-              }
+              <input id="filterInput" type="input" class="form-control" placeholder="Search..."/>
+              <div>{
+                val _ = LatestEvent.input(filterInput).bind
+                pagedNodes(graph, draftClusters, clusteringReport,
+                graph.nodes().filter { nodeName =>
+                  filterInput.value != "" && nodeName.contains(filterInput.value)
+                }
+                ).bind
+              }</div>
           }
         }</div>
       </div>
