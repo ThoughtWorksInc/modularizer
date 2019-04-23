@@ -8,6 +8,8 @@ enablePlugins(SbtSassify)
 
 enablePlugins(WebScalaJSBundlerPlugin)
 
+name := "modularizer"
+
 lazy val js = project
 
 scalaJSProjects += js
