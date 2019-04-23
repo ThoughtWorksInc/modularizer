@@ -66,6 +66,4 @@ reStart / aggregate := false
 
 ThisBuild / dynverSeparator := "-"
 
-dockerExposedPorts += 42019
-
 dockerBaseImage := "openjdk:11.0.2"
