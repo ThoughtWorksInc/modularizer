@@ -40,11 +40,11 @@ class DotFileInputGroup {
   @dom
   val view: Binding[HTMLDivElement] =
     <div class="form-group">
-      <label for="jdependReportFile">Import DOT output file produced by <kbd>jdeps</kbd></label>
+      <label for="jdependReportFile">Import DOT output file produced by <code>jdeps</code></label>
       {
         val element = input.bind
         element.className = raw"""
-          form-control
+          form-control-file
           ${
             readerOption.bind match {
               case None => ""
@@ -66,7 +66,7 @@ class DotFileInputGroup {
         element
       }
       <small class="form-text text-muted">
-        You can run command-line tool <kbd>jdeps -dotoutput your.jar</kbd> from OpenJDK
+        You can run command-line tool <code>jdeps -dotoutput your.jar</code> from OpenJDK
         to produce the dependency report <code>your.jar.dot</code>.
       </small>
       {
