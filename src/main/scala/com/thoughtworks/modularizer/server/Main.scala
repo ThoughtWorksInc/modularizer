@@ -16,7 +16,7 @@ object Main extends StrictLogging {
     import system.dispatcher
     val configuration = new Configuration(arguments)
     val workTrees = for (i <- 0 until configuration.numberOfTemporaryGitClones()) yield {
-      new File(s"work-tree-$i")
+      configuration.temporaryDirectory().resolve(s"work-tree-$i").toFile()
     }
     val gitPool = GitPool(workTrees)
     val server = new Server(configuration, gitPool)
