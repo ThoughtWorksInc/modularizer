@@ -35,11 +35,11 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.fu
 
 resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
 
-libraryDependencies += ScalablyTyped.D.d3
-npmDependencies in Compile += "d3" -> "5.9.2"
-
 libraryDependencies += ScalablyTyped.D.`dagre-d3`
 npmDependencies in Compile += "dagre-d3" -> "0.6.3"
+
+libraryDependencies += ScalablyTyped.D.`d3-shape`
+npmDependencies in Compile += "d3-shape" -> "1.3.5"
 
 libraryDependencies += ScalablyTyped.G.`graphlib-dot`
 npmDependencies in Compile += "graphlib-dot" -> "0.6.2"

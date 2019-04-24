@@ -1,24 +1,24 @@
 package com.thoughtworks.modularizer.views.workboard
 import com.thoughtworks.binding.Binding._
-import com.thoughtworks.binding.dom.Runtime.TagsAndTags2
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.{Node, SVGPreserveAspectRatio}
-import org.scalajs.dom.{Event, window}
+import org.scalajs.dom.window
 import typings.d3DashSelectionLib.d3DashSelectionMod.{BaseType, Selection}
-import typings.d3Lib.d3Mod
+
+import scala.scalajs.js
 import typings.dagreDashD3Lib.dagreDashD3Mod
+import typings.d3DashSelectionLib.d3DashSelectionMod
 import typings.dagreLib.Anon_Compound
 import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
-import typings.dagreLib.dagreMod.{GraphLabel, Label}
-import typings.graphlibLib.graphlibMod.{Graph, algNs}
+import typings.dagreLib.dagreMod.GraphLabel
+import typings.graphlibLib.graphlibMod.Graph
 import typings.graphlibLib.graphlibMod.Path
+import typings.d3DashShapeLib.d3DashShapeMod
 import com.thoughtworks.modularizer.utilities._
-import scalatags.JsDom
 
 import scala.annotation.tailrec
-import scala.collection.immutable
 
 /**
   * @author 杨博 (Yang Bo)
@@ -31,35 +31,23 @@ class SummaryDiagram(simpleGraph: Graph,
   import org.scalajs.dom.svg
   @dom
   val view: Binding[Node] = {
-    <div class="flex-grow-1 col-auto">
-      <button
-        type="button"
-        class="btn btn-primary position-absolute"
-        style:bottom="2em"
-        style:right="2em"
-        onclick={ _: Event=>
-          clusteringRule.value = ClusteringRule(Set.empty, draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
-        }
-      ><span class="fas fa-save"></span></button>
-      {
-        val svg = <svg
+    val svg = <svg
           style:width="100%" style:height="100%"
           preserveAspectRatio:baseVal:align={SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMID}
           preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
         ></svg>
-        val render = dagreDashD3Mod.^.render.newInstance0()
-        val graphD3 = buildGraphD3.bind
-        window.requestAnimationFrame { _ =>
-          render(d3Mod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
-          val boundBox = svg.getBBox()
-          svg.viewBox.baseVal.x = boundBox.x
-          svg.viewBox.baseVal.y = boundBox.y
-          svg.viewBox.baseVal.width = boundBox.width
-          svg.viewBox.baseVal.height = boundBox.height
-        }
-        svg
-      }
-    </div>
+    val render = dagreDashD3Mod.render.newInstance0()
+//    render(1, 2)
+    val graphD3 = buildGraphD3.bind
+    window.requestAnimationFrame { _ =>
+      render(d3DashSelectionMod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
+      val boundBox = svg.getBBox()
+      svg.viewBox.baseVal.x = boundBox.x
+      svg.viewBox.baseVal.y = boundBox.y
+      svg.viewBox.baseVal.width = boundBox.width
+      svg.viewBox.baseVal.height = boundBox.height
+    }
+    svg
   }
 
   def buildGraphD3: Binding[GraphD3] = Binding {
@@ -79,45 +67,37 @@ class SummaryDiagram(simpleGraph: Graph,
 
     g.setNode(
       "Utilities",
-      Label(
-        StringDictionary(
-          "label" -> "",
-          "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
-        )
+      StringDictionary[js.Any](
+        "label" -> "",
+        "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
       )
     )
     g.setNode(
       "label_Utilities",
-      Label(
-        StringDictionary(
-          "rank" -> "max",
-          "label" -> "Utilities",
+      StringDictionary[js.Any](
+        "rank" -> "max",
+        "label" -> "Utilities",
 //            "clusterLabelPos" -> "top",
-          "style" -> "stroke: none; fill-opacity: 0"
-        )
+        "style" -> "stroke: none; fill-opacity: 0"
       )
     )
     g.setParent("label_Utilities", "Utilities")
 
     g.setNode(
       "Facades",
-      Label(
-        StringDictionary(
-          "label" -> "",
-          "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
-        )
+      StringDictionary[js.Any](
+        "label" -> "",
+        "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
       )
     )
 
     g.setNode(
       "label_Facades",
-      Label(
-        StringDictionary(
-          "rank" -> "max",
-          "label" -> "Facades",
+      StringDictionary[js.Any](
+        "rank" -> "max",
+        "label" -> "Facades",
 //            "clusterLabelPos" -> "top",
-          "style" -> "stroke: none; fill-opacity: 0"
-        )
+        "style" -> "stroke: none; fill-opacity: 0"
       )
     )
     g.setParent("label_Facades", "Facades")
@@ -125,51 +105,47 @@ class SummaryDiagram(simpleGraph: Graph,
       val id = cluster.parent
       g.setNode(
         id,
-        Label(
-          StringDictionary(
-            "label" -> "",
+        StringDictionary[js.Any](
+          "label" -> "",
 //            "clusterLabelPos" -> "top",
-            "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
-          )
+          "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
         )
       )
 
       val labelId = s"label_$id"
       g.setNode(
         labelId,
-        Label(
-          StringDictionary(
-            "rank" -> "max",
-            "label" -> id,
+        StringDictionary[js.Any](
+          "rank" -> "max",
+          "label" -> id,
 //            "clusterLabelPos" -> "top",
-            "style" -> "stroke: none; fill-opacity: 0"
-          )
+          "style" -> "stroke: none; fill-opacity: 0"
         )
       )
       g.setParent(labelId, id)
 
 //      for (child <- cluster.children) {
-//        g.setNode(child, Label(StringDictionary("label" -> child)))
+//        g.setNode(child, Label(StringDictionary[js.Any]("label" -> child)))
 //        g.setParent(child, cluster.parent)
 //      }
     }
 //
 //    g.setNode("xxx",
 //              Label(
-//                StringDictionary(
+//                StringDictionary[js.Any](
 //                  "label" -> "xxx"
 //                )
 //              ))
 //
 //    g.setParent("xxx", "a")
 //
+
     g.setDefaultEdgeLabel { edge =>
-      Label(
-        StringDictionary(
-          "curve" -> d3Mod.^.curveBasis
-        )
-        // TODO:
+      StringDictionary[js.Any](
+        "curve" -> d3DashShapeMod.^.curveBasis
       )
+    // TODO:
+
     }
 
     def addKeyPath(paths: StringDictionary[StringDictionary[Path]],
@@ -185,12 +161,10 @@ class SummaryDiagram(simpleGraph: Graph,
           val currentParent = report.compoundGraph.parent(from)
           if (currentParent.isDefined) {
             g.setNode(from,
-                      Label(
-                        StringDictionary(
-                          "label" -> from,
-                          //            "clusterLabelPos" -> "top",
-                          //            "style" -> "fill: #ffd47f",
-                        )
+                      StringDictionary[js.Any](
+                        "label" -> from,
+                        //            "clusterLabelPos" -> "top",
+                        //            "style" -> "fill: #ffd47f",
                       ))
             g.setParent(from, currentParent.get)
             if (report.compoundGraph.parent(predecessor).isDefined) {
