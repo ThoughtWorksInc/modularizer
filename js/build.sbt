@@ -44,6 +44,13 @@ npmDependencies in Compile += "d3-shape" -> "1.3.5"
 libraryDependencies += ScalablyTyped.G.`graphlib-dot`
 npmDependencies in Compile += "graphlib-dot" -> "0.6.2"
 
+libraryDependencies += ScalablyTyped.B.bootstrap
+npmDependencies in Compile += "bootstrap" -> "4.3.1"
+npmDependencies in Compile += "jquery" -> "3.3.1"
+npmDependencies in Compile += "popper.js" -> "1.14.7"
+
+npmDependencies in Compile += "@fortawesome/fontawesome-free" -> "5.8.1"
+
 scalaJSUseMainModuleInitializer := true
 
 libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test

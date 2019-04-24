@@ -69,6 +69,8 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
+    typings.bootstrapLib.bootstrapLibRequire
+
     implicit val gitStorageUrlConfiguration = new GitStorageUrlConfiguration
     implicit val fetcher = stdLib.^.window
     import ExecutionContext.Implicits.global

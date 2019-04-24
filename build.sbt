@@ -16,13 +16,17 @@ scalaJSProjects += js
 
 pipelineStages in Assets += scalaJSPipeline
 
-libraryDependencies += "org.webjars" % "bootstrap" % "4.3.1"
+npmAssets ++= {
+  NpmAssets
+    .ofProject(js) { nodeModules =>
+      // Runtime CSS files
+      (nodeModules / "@fortawesome" / "fontawesome-free").allPaths +++ (nodeModules / "bootstrap").allPaths
+    }
+    .value
+}
 
-libraryDependencies += "org.webjars" % "jquery" % "3.3.1-2"
-
-libraryDependencies += "org.webjars" % "popper.js" % "1.14.7"
-
-libraryDependencies += "org.webjars" % "font-awesome" % "5.8.1"
+// Compile-time SASS files, used by SbtSassify only.
+libraryDependencies += "org.webjars" % "bootstrap" % "4.3.1" % Provided
 
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.8"
 
