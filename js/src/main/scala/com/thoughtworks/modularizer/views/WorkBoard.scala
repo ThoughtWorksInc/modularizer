@@ -49,7 +49,7 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
     }
 
     val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
-    val summaryDiagram = new SummaryDiagram(graph, draftClusters, rule, clusteringReport)
+    val summaryDiagram = new SummaryDiagram(graph, draftClusters, breakingEdges, rule, clusteringReport)
     val breakingEdgeList = new BreakingEdgeList(breakingEdges)
 
     Constants(

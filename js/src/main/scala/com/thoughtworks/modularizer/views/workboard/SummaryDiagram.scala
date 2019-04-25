@@ -6,34 +6,48 @@ import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, Dr
 import com.thoughtworks.modularizer.utilities._
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.SVGPreserveAspectRatio._
-import org.scalajs.dom.raw.Node
-import org.scalajs.dom.window
+import org.scalajs.dom.raw.{HTMLButtonElement, HTMLElement, Node, SVGSVGElement}
+import org.scalajs.dom._
 import typings.d3DashSelectionLib.d3DashSelectionMod
 import typings.d3DashSelectionLib.d3DashSelectionMod.{BaseType, Selection}
 import typings.d3DashShapeLib.d3DashShapeMod
 import typings.dagreDashD3Lib.dagreDashD3Mod
 import typings.dagreLib.Anon_Compound
-import typings.dagreLib.dagreMod.GraphLabel
+import typings.dagreLib.dagreMod.{GraphLabel, Label}
 import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
 import typings.graphlibLib.graphlibMod.{Graph, Path}
 
 import scala.annotation.tailrec
 import scala.scalajs.js
+import scala.xml.Xhtml
 
 /**
   * @author 杨博 (Yang Bo)
   */
 class SummaryDiagram(simpleGraph: Graph,
                      draftClusters: Vars[DraftCluster],
+                     breakingEdges: Vars[(String, String)],
                      clusteringRule: Var[ClusteringRule],
                      clusteringReport: Binding[ClusteringReport]) {
   @dom
   val view: Binding[Node] = {
-    val svg = <svg
+    val svg: SVGSVGElement = <svg
       preserveAspectRatio:baseVal:align={SVG_PRESERVEASPECTRATIO_XMIDYMID}
       preserveAspectRatio:baseVal:meetOrSlice={SVG_MEETORSLICE_MEET}
+      onclick={ event: Event =>
+        val parentButton = event.target.asInstanceOf[js.Dynamic].closest("[v],[w]").asInstanceOf[HTMLButtonElement]
+        if (parentButton != null) {
+          breakingEdges.value += parentButton.getAttribute("v") -> parentButton.getAttribute("w")
+        }
+      }
     ></svg>
     val render = dagreDashD3Mod.render.newInstance0()
+    for ((arrowType, arrowRender) <- render.arrows()) {
+      render.arrows()(arrowType) = { (parent, id, edge, arrowType) =>
+        arrowRender(parent, id, edge, arrowType)
+      }
+    }
+//    console.log(render.arrows())
     val graphD3 = buildGraphD3.bind
     window.requestAnimationFrame { _ =>
       render(d3DashSelectionMod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
@@ -121,11 +135,21 @@ class SummaryDiagram(simpleGraph: Graph,
       g.setParent(labelId, id)
     }
 
-    g.setDefaultEdgeLabel { edge =>
-      StringDictionary[js.Any](
-        "curve" -> d3DashShapeMod.^.curveBasis
-      )
+    val defaultEdgeLabel: js.Function3[String, String, js.UndefOr[String], Label] = {
+      (v: String, w: String, name: js.UndefOr[String]) =>
+        StringDictionary[js.Any](
+          "curve" -> d3DashShapeMod.^.curveBasis,
+          "labelType" -> "html",
+          "label" -> Xhtml.toXhtml(
+            <button type="button" class="btn btn-link" v={v} w={w} title={s"Break $v->$w"}>
+              <span class="fas fa-unlink"></span>
+            </button>
+          )
+        )
     }
+
+    // Workaround for https://github.com/DefinitelyTyped/DefinitelyTyped/pull/34977
+    g.asInstanceOf[js.Dynamic].setDefaultEdgeLabel(defaultEdgeLabel)
 
     def addKeyPath(paths: StringDictionary[StringDictionary[Path]],
                    from: String,
