@@ -1,24 +1,24 @@
 package com.thoughtworks.modularizer.views.workboard
+
 import com.thoughtworks.binding.Binding._
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
-import org.scalablytyped.runtime.StringDictionary
-import org.scalajs.dom.raw.{Node, SVGPreserveAspectRatio}
-import org.scalajs.dom.window
-import typings.d3DashSelectionLib.d3DashSelectionMod.{BaseType, Selection}
-
-import scala.scalajs.js
-import typings.dagreDashD3Lib.dagreDashD3Mod
-import typings.d3DashSelectionLib.d3DashSelectionMod
-import typings.dagreLib.Anon_Compound
-import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
-import typings.dagreLib.dagreMod.GraphLabel
-import typings.graphlibLib.graphlibMod.Graph
-import typings.graphlibLib.graphlibMod.Path
-import typings.d3DashShapeLib.d3DashShapeMod
 import com.thoughtworks.modularizer.utilities._
+import org.scalablytyped.runtime.StringDictionary
+import org.scalajs.dom.raw.SVGPreserveAspectRatio._
+import org.scalajs.dom.raw.Node
+import org.scalajs.dom.window
+import typings.d3DashSelectionLib.d3DashSelectionMod
+import typings.d3DashSelectionLib.d3DashSelectionMod.{BaseType, Selection}
+import typings.d3DashShapeLib.d3DashShapeMod
+import typings.dagreDashD3Lib.dagreDashD3Mod
+import typings.dagreLib.Anon_Compound
+import typings.dagreLib.dagreMod.GraphLabel
+import typings.dagreLib.dagreMod.graphlibNs.{Graph => GraphD3}
+import typings.graphlibLib.graphlibMod.{Graph, Path}
 
 import scala.annotation.tailrec
+import scala.scalajs.js
 
 /**
   * @author 杨博 (Yang Bo)
@@ -27,16 +27,13 @@ class SummaryDiagram(simpleGraph: Graph,
                      draftClusters: Vars[DraftCluster],
                      clusteringRule: Var[ClusteringRule],
                      clusteringReport: Binding[ClusteringReport]) {
-
-  import org.scalajs.dom.svg
   @dom
   val view: Binding[Node] = {
     val svg = <svg
-      preserveAspectRatio:baseVal:align={SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMID}
-      preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
+      preserveAspectRatio:baseVal:align={SVG_PRESERVEASPECTRATIO_XMIDYMID}
+      preserveAspectRatio:baseVal:meetOrSlice={SVG_MEETORSLICE_MEET}
     ></svg>
     val render = dagreDashD3Mod.render.newInstance0()
-//    render(1, 2)
     val graphD3 = buildGraphD3.bind
     window.requestAnimationFrame { _ =>
       render(d3DashSelectionMod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
@@ -122,29 +119,12 @@ class SummaryDiagram(simpleGraph: Graph,
         )
       )
       g.setParent(labelId, id)
-
-//      for (child <- cluster.children) {
-//        g.setNode(child, Label(StringDictionary[js.Any]("label" -> child)))
-//        g.setParent(child, cluster.parent)
-//      }
     }
-//
-//    g.setNode("xxx",
-//              Label(
-//                StringDictionary[js.Any](
-//                  "label" -> "xxx"
-//                )
-//              ))
-//
-//    g.setParent("xxx", "a")
-//
 
     g.setDefaultEdgeLabel { edge =>
       StringDictionary[js.Any](
         "curve" -> d3DashShapeMod.^.curveBasis
       )
-    // TODO:
-
     }
 
     def addKeyPath(paths: StringDictionary[StringDictionary[Path]],
@@ -203,30 +183,6 @@ class SummaryDiagram(simpleGraph: Graph,
         })
       }
     }
-
-//
-//    for (draftCluster <- draftClusters) {
-//      new ClusterMountPoint(g, draftCluster.name).bind
-//      val originalName = draftCluster.name.value // FIXME: avoid .value
-//
-//      val dependencies = report.dependencyPaths(originalName)
-//
-//      ClusteringReport.findNearestClusters(report.dependencyPaths, draftClusters.all.bind.collect {
-//        case cluster if cluster.name.value != originalName =>
-//          cluster.name.value
-//      }, originalName)
-////      ClusteringReport.findNearestCluster()
-////      for (otherCluster <- draftClusters) {
-////        if (otherCluster.name.value != originalName && !dependencies(otherCluster.name.value).distance.isInfinite) {
-////
-////        }
-////      }
-//
-//    }
-
-//    draftClusters
-
-    //.setNode("", Label())
 
     g
   }
