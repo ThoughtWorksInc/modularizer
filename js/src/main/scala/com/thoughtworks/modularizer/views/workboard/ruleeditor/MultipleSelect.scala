@@ -22,6 +22,7 @@ class MultipleSelect[Items: BindableSeq.Lt[?, String]](val items: Items) {
           ${if (items.bindSeq.isEmpty.bind) "d-none" else ""}
         """
       }
+      style:direction="rtl"
       selectedIndex={-1}
       multiple="multiple"
       size={items.bindSeq.length.bind}
