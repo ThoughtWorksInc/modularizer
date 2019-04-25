@@ -14,9 +14,9 @@ class BreakingEdgeList(breakingEdges: Vars[(String, String)]) {
       <div class="card-body">
         <h5 class="card-title">Breaking Edges</h5>
         <form class="form-inline flex-nowrap my-1">
-          <input type="text" class="m-1 form-control flex-grow-1" placeholder="Dependent" id="dependentInput"/>
+          <input type="text" class="m-1 form-control flex-shrink-1 flex-grow-1" style:width="100%" placeholder="Dependent" id="dependentInput"/>
           <span class="m-1 fas fa-arrow-right"></span>
-          <input type="text" class="m-1 form-control flex-grow-1" placeholder="Dependency" id="dependencyInput"/>
+          <input type="text" class="m-1 form-control flex-shrink-1 flex-grow-1" style:width="100%" placeholder="Dependency" id="dependencyInput"/>
           <button type="submit" class="m-1 btn btn-secondary" disabled={
             locally(LatestEvent.input(dependentInput).bind)
             locally(LatestEvent.input(dependencyInput).bind)
@@ -36,11 +36,11 @@ class BreakingEdgeList(breakingEdges: Vars[(String, String)]) {
         {
           for ((from, to) <- breakingEdges) yield {
             <form class="form-inline flex-nowrap my-1">
-              <span title={ from } style:direction="rtl" class="m-1 ml-auto flex-shrink-1 text-right text-truncate">{
+              <span title={ from } style:direction="rtl" class="m-1 ml-auto flex-shrink-1 flex-shrink-1 text-right text-truncate">{
                 from
               }</span>
               <span class="m-1 fas fa-arrow-right"></span>
-              <span title={ to } style:direction="rtl" class="m-1 mr-auto flex-shrink-1 text-right text-truncate">{
+              <span title={ to } style:direction="rtl" class="m-1 mr-auto flex-shrink-1 flex-shrink-1 text-right text-truncate">{
                 to
               }</span>
               <button type="submit" class="m-1 btn btn-secondary"
