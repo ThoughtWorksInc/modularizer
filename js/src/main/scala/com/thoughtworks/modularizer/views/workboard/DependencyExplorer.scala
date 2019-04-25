@@ -9,6 +9,7 @@ import org.scalajs.dom.raw._
 import org.scalajs.dom._
 import org.scalajs.jquery.{JQuery, JQueryEventObject, jQuery}
 import typings.graphlibLib.graphlibMod.Graph
+import typings.jqueryLib.jqueryMod
 
 import scala.collection.immutable
 import scala.scalajs.js
@@ -19,7 +20,7 @@ import scala.scalajs.js
 object DependencyExplorer {
 
   @dom
-  def dependencyList(graph: Graph, items: js.Array[String]) = {
+  def dependencyList(graph: Graph, items: js.Array[String]): Binding[Node] = {
     <div class="list-group">
       <a href="#" class="list-group-item list-group-item-action active">
         Cras justo odio
@@ -42,7 +43,8 @@ object DependencyExplorer {
   }
 
   def isShown(dropdown: Element): Binding[Boolean] = Binding {
-    val dropdownJQuery = jQuery(dropdown)
+
+    val dropdownJQuery = jqueryMod(dropdown).asInstanceOf[JQuery]
     val latestHiddenEvent = new LatestJQueryEvent(dropdownJQuery, "hidden.bs.dropdown").bind
     val latestShownEventAfterLatestHidden = new LatestJQueryEvent(dropdownJQuery, "shown.bs.dropdown").bind
     dropdownJQuery.hasClass("show")
@@ -346,9 +348,9 @@ object DependencyExplorer {
              clusteringReport: Binding[ClusteringReport],
              rule: Var[ClusteringRule],
              selectedNodeIds: BindingSeq[String]): Binding[Node] =
-    <div class="flex-shrink-1 col-4" style:minWidth="0" style:overflowY="auto">{
+    <div class="col-4" style:minWidth="0" style:overflowY="auto">{
       val currentTab = Var[DependencyExplorerTab](DependencyExplorerTab.Root)
-      <div class="card">
+      <div class="card my-2">
         <ul class="nav nav-tabs sticky-top bg-white">
           { DependencyExplorerTab.Root.navItem(currentTab).bind }
           { DependencyExplorerTab.Leaf.navItem(currentTab).bind }

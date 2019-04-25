@@ -32,7 +32,7 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
   @dom
   val view: Binding[Node] = {
     <div
-      class="card m-2"
+      class="card my-2"
       draggable="true"
       ondragstart={
         val clusterId = draftCluster.name.bind;

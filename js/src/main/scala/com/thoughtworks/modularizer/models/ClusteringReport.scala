@@ -23,9 +23,11 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
 
   compoundGraph.setNodes(simpleGraph.nodes())
   for (edge <- simpleGraph.edges()) {
-    if (!breakingEdges(edge.v -> edge.w)) {
-      compoundGraph.setEdge(edge)
-    }
+    compoundGraph.setEdge(edge)
+  }
+
+  for ((v, w) <- breakingEdges) {
+    compoundGraph.removeEdge(v, w)
   }
 
   // TODO: 确保所有 cluster 之间不能互相依赖

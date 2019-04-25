@@ -59,7 +59,7 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
     ).flatMap(identity)
 
   @dom
-  val view: Binding[Node] = <div class="flex-shrink-1 col-4" style:overflowY="auto">
+  val view: Binding[Node] = <div class="col-3" style:overflowY="auto">
     <form class="my-2">
       <div class="input-group">
         {

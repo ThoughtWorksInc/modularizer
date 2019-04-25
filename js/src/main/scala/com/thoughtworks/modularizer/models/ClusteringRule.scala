@@ -5,9 +5,9 @@ import upickle.default._
 /**
   * @author 杨博 (Yang Bo)
   */
-final case class ClusteringRule(breakingEdges: Set[(String, String)], clusters: immutable.Seq[ClusteringRule.Cluster]) {}
+final case class ClusteringRule(breakingEdges: Iterable[(String, String)], clusters: immutable.Seq[ClusteringRule.Cluster]) {}
 object ClusteringRule {
-  def empty = ClusteringRule(Set.empty, immutable.Seq.empty)
+  def empty = ClusteringRule(Iterable.empty, immutable.Seq.empty)
 
   implicit val rw: ReadWriter[ClusteringRule] = macroRW
 

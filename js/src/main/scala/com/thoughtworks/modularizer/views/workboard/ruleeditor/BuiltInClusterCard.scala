@@ -17,7 +17,7 @@ class BuiltInClusterCard[Items: BindableSeq.Lt[?, String]](items: Items,
   def selectedUnlockedNodeIds: Binding.BindingSeq[String] = selectUnlockedNodes.selectedNodeIds
 
   @dom val view: Binding[Node] = {
-    <div class="card m-2">
+    <div class="card my-2">
       <div class="input-group sticky-top">
         <div class="input-group-prepend">
           <label

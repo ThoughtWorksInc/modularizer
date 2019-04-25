@@ -32,10 +32,9 @@ class SummaryDiagram(simpleGraph: Graph,
   @dom
   val view: Binding[Node] = {
     val svg = <svg
-          style:width="100%" style:height="100%"
-          preserveAspectRatio:baseVal:align={SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMID}
-          preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
-        ></svg>
+      preserveAspectRatio:baseVal:align={SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMID}
+      preserveAspectRatio:baseVal:meetOrSlice={SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET}
+    ></svg>
     val render = dagreDashD3Mod.render.newInstance0()
 //    render(1, 2)
     val graphD3 = buildGraphD3.bind
