@@ -11,6 +11,7 @@ import typings.graphlibDashDotLib.graphlibDashDotMod
 import typings.graphlibLib.graphlibMod
 import typings.stdLib.{GlobalFetch, RequestInit, Response}
 import typings.graphlibLib.graphlibMod.{Graph, GraphOptions}
+import typings.stdLib.stdLibStrings.`no-cache`
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
@@ -36,7 +37,7 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
                 val graphJson = graphlibMod.jsonNs.write(graph)
                 Some(
                   fetcher.fetch(gitStorageConfiguration.graphJsonUrl(branch),
-                                RequestInit(method = "PUT", body = JSON.stringify(graphJson))))
+                                RequestInit(cache = `no-cache`, method = "PUT", body = JSON.stringify(graphJson))))
               case notRightGraph =>
                 None
             }
@@ -55,9 +56,9 @@ class ImportButtonGroup(branchName: Binding[Option[String]], jdepsFileContent: B
         future.bind match {
           case Some(Success(graph)) =>
             uploading.bind match {
-              case Some(thenable) => 
+              case Some(thenable) =>
                 thenable.bind match {
-                  case Some(Right(response)) => 
+                  case Some(Right(response)) =>
                     Some(graph)
                   case _ =>
                     None

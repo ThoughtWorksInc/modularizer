@@ -23,6 +23,7 @@ import scala.scalajs.js.{Thenable, |}
 import scala.util.Success
 import scala.collection.immutable
 import org.scalajs.dom.raw.Event
+import typings.stdLib.stdLibStrings.`no-cache`
 
 /**
   * @author 杨博 (Yang Bo)
@@ -87,7 +88,8 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
       val responsePromise = fetcher
         .fetch(
           gitStorageConfiguration.ruleJsonUrl(branch),
-          RequestInit(method = "PUT",
+          RequestInit(cache = `no-cache`,
+                      method = "PUT",
                       body = write(rule.bind),
                       headers = StringDictionary(eTag.bind.map("If-Match" -> _).toSeq: _*))
         )

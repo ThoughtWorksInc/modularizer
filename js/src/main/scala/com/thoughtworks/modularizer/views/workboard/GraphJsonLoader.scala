@@ -7,6 +7,7 @@ import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
 import org.scalajs.dom.raw.Node
 import typings.graphlibLib.graphlibMod
 import typings.graphlibLib.graphlibMod.Graph
+import typings.stdLib.stdLibStrings.`no-cache`
 import typings.stdLib.{GlobalFetch, RequestInit, Response}
 
 import scala.concurrent.ExecutionContext
@@ -23,7 +24,7 @@ class GraphJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
   private val graphResponse: Promise[Response] =
     fetcher.fetch(
       gitStorageConfiguration.graphJsonUrl(branch),
-      RequestInit(method = "GET")
+      RequestInit(cache = `no-cache`,method = "GET")
     )
   private val graphBody: Binding[Option[Thenable[Graph]]] = Binding {
     graphResponse.bind match {

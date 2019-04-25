@@ -7,9 +7,11 @@ import com.thoughtworks.modularizer.services.GitStorageUrlConfiguration
 import org.scalajs.dom.raw._
 import org.scalajs.dom._
 import typings.stdLib.GlobalFetch
+
 import scala.concurrent.ExecutionContext
 import com.thoughtworks.modularizer.models.ClusteringRule
 import typings.stdLib.RequestInit
+import typings.stdLib.stdLibStrings.`no-cache`
 import ujson.WebJson
 import upickle.default.reader
 
@@ -26,7 +28,7 @@ class RuleJsonLoader(branch: String)(implicit fetcher: GlobalFetch,
   private val ruleResponse =
     fetcher.fetch(
       gitStorageConfiguration.ruleJsonUrl(branch),
-      RequestInit(method = "GET")
+      RequestInit(cache = `no-cache`, method = "GET")
     )
 
   val eTag: Binding[Option[String]] = Binding {

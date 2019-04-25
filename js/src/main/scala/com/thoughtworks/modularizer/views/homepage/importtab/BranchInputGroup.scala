@@ -7,6 +7,7 @@ import org.scalajs.dom.raw._
 import typings.stdLib.GlobalFetch
 import typings.stdLib.Response
 import typings.stdLib.RequestInit
+import typings.stdLib.stdLibStrings.`no-cache`
 
 /**
   * @author 杨博 (Yang Bo)
@@ -36,7 +37,9 @@ class BranchInputGroup(implicit fetcher: GlobalFetch, gitStorageConfiguration: G
     uncheckedBranchName.bind match {
       case None => None
       case Some(branch) =>
-        fetcher.fetch(gitStorageConfiguration.graphJsonUrl(branch), RequestInit(method = "HEAD")).bind
+        fetcher
+          .fetch(gitStorageConfiguration.graphJsonUrl(branch), RequestInit(cache = `no-cache`, method = "HEAD"))
+          .bind
     }
   }
 
