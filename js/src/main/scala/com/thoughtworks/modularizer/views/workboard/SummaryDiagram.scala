@@ -141,7 +141,7 @@ class SummaryDiagram(simpleGraph: Graph,
           "curve" -> d3DashShapeMod.^.curveBasis,
           "labelType" -> "html",
           "label" -> Xhtml.toXhtml(
-            <button type="button" class="btn btn-link" v={v} w={w} title={s"Break $v->$w"}>
+            <button type="button" class="btn btn-link" v={v} w={w} title={s"Break $v→$w"}>
               <span class="fas fa-unlink"></span>
             </button>
           )
