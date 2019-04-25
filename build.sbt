@@ -68,6 +68,4 @@ fork := true
 
 reStart / aggregate := false
 
-ThisBuild / dynverSeparator := "-"
-
 dockerBaseImage := "openjdk:11.0.2"
