@@ -2,7 +2,7 @@ package com.thoughtworks.modularizer.views.workboard
 
 import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
-import com.thoughtworks.binding.{Binding, dom}
+import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import com.thoughtworks.modularizer.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import DraftCluster._
 import com.thoughtworks.modularizer.utilities._
@@ -60,7 +60,7 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
 
   @dom
   val view: Binding[Node] = <div class="flex-shrink-1 col-4" style:overflowY="auto">
-    <form class="m-2">
+    <form class="my-2">
       <div class="input-group">
         {
           val nextColor = Binding {
@@ -84,16 +84,25 @@ class RuleEditor(draftClusters: Vars[DraftCluster],
             class="form-control"
           />
           <div class="input-group-append">
-            <button type="submit" class="btn btn-secondary" onclick={ event: Event =>
-              event.preventDefault()
-              val clusterColorHistogram =
-                draftClusters.value
-                  .groupBy(_.color.value)
-                  .mapValues(_.size)
-                  .withDefaultValue(0)
-              draftClusters.value.append(DraftCluster(Var(clusterName.value), Vars.empty, Var(nextColor.value)))
-              clusterName.value = ""
-            }>
+            <button
+              type="submit" class="btn btn-secondary"
+              disabled={
+                locally(LatestEvent.input(clusterName).bind)
+                locally(draftClusters.length.bind)
+                clusterName.value.isEmpty
+              }
+              onclick={ event: Event =>
+                event.preventDefault()
+                val clusterColorHistogram =
+                  draftClusters.value
+                    .groupBy(_.color.value)
+                    .mapValues(_.size)
+                    .withDefaultValue(0)
+                val initalName = clusterName.value
+                clusterName.value = ""
+                draftClusters.value.prepend(DraftCluster(Var(initalName), Vars.empty, Var(nextColor.value)))
+              }
+            >
               <span title="Add" class="fas fa-folder-plus"></span>
             </button>
           </div>
