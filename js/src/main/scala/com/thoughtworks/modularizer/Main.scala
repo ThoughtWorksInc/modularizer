@@ -70,7 +70,7 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     typings.bootstrapLib.bootstrapLibRequire
-
+    document.title = s"Modularizer ${BuildInfo.version}"
     implicit val gitStorageUrlConfiguration = new GitStorageUrlConfiguration
     implicit val fetcher = stdLib.^.window
     import ExecutionContext.Implicits.global

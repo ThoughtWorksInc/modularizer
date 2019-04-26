@@ -4,6 +4,8 @@ enablePlugins(Example)
 
 enablePlugins(ScalaJSWeb)
 
+enablePlugins(BuildInfoPlugin)
+
 // ScalaJSWeb only works with ScalaJSBundlerPlugin when bundling mode is library-only.
 webpackBundlingMode := BundlingMode.LibraryOnly()
 
@@ -58,3 +60,5 @@ libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
 
 publish / skip := true
+
+buildInfoPackage := "com.thoughtworks.modularizer"
