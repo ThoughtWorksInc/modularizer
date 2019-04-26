@@ -37,6 +37,7 @@ class SummaryDiagram(simpleGraph: Graph,
       onclick={ event: Event =>
         val parentButton = event.target.asInstanceOf[js.Dynamic].closest("[v],[w]").asInstanceOf[HTMLButtonElement]
         if (parentButton != null) {
+          parentButton.style.display = "none"
           breakingEdges.value += parentButton.getAttribute("v") -> parentButton.getAttribute("w")
         }
       }
