@@ -9,7 +9,7 @@ import org.scalajs.dom.raw.{HTMLOptionElement, HTMLSelectElement}
 class MultipleSelect[Items: BindableSeq.Lt[?, String]](val items: Items) {
 
   @dom
-  protected def option(text: String): Binding[HTMLOptionElement] = <option value={text}>{ text }</option>
+  protected def option(text: String): Binding[HTMLOptionElement] = <option title={text} value={text}>{ text }</option>
 
   private val options: BindingSeq[HTMLOptionElement] = items.bindSeq.mapBinding(option)
 
