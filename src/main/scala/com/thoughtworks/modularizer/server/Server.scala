@@ -57,13 +57,14 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
   }
 
   val serverBinding = {
-    Http.apply().bindAndHandle(route, configuration.listeningHost(), configuration.listeningPort())
+    Http.apply().bindAndHandle(route, configuration.listeningHost, configuration.listeningPort)
   }
 
   private val credentialsProviderOption: Option[UsernamePasswordCredentialsProvider] =
-    configuration.gitUsername
-      .map(new UsernamePasswordCredentialsProvider(_, configuration.gitPassword()))
-      .toOption
+    for {
+      gitUsername <- configuration.gitUsername
+      gitPassword <- configuration.gitPassword
+    } yield new UsernamePasswordCredentialsProvider(gitUsername, gitPassword)
 
   def route: Route = {
     respondWithHeader(`Cache-Control`(`max-age`(0))) {
@@ -84,7 +85,7 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
                       try {
                         val result = git
                           .fetch()
-                          .setRemote(configuration.gitUri())
+                          .setRemote(configuration.gitUri)
                           .setCredentialsProvider(credentialsProviderOption.orNull)
                           .setRefSpecs(branchRef)
                           .call()
@@ -179,7 +180,7 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
 
                               val uploadResults = git
                                 .push()
-                                .setRemote(configuration.gitUri())
+                                .setRemote(configuration.gitUri)
                                 .setCredentialsProvider(credentialsProviderOption.orNull)
                                 .setRefSpecs(new RefSpec().setSourceDestination(commit.toObjectId.name,
                                                                                 s"$R_HEADS$branch"))

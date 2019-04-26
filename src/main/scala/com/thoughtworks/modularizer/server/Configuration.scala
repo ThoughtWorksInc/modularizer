@@ -1,21 +1,38 @@
 package com.thoughtworks.modularizer.server
 
-import org.rogach.scallop.ScallopConf
-import java.nio.file.Files
-import java.nio.file.Path
+import java.nio.file.{Files, InvalidPathException, Path, Paths}
+
+import caseapp.{AppName, AppVersion, ProgName}
+import caseapp.core.argparser.ArgParser
+import com.thoughtworks.modularizer.BuildInfo
 
 /**
   * @author 杨博 (Yang Bo)
   */
-class Configuration(arguments: Seq[String]) extends ScallopConf(arguments) {
-  printedName = "Modularizer Server"
-  val listeningHost = opt[String](noshort = true, default = Some("localhost"))
-  val listeningPort = opt[Int](noshort = true, default = Some(42019))
-  val gitUri = opt[String](noshort = true, required = true)
-  val gitUsername = opt[String](noshort = true)
-  val gitPassword = opt[String](noshort = true, default = Some(""))
-  val numberOfTemporaryGitClones = opt[Int](noshort = true, default = Some(3))
-  val maxRetriesForUploading = opt[Int](noshort = true, default = Some(3))
-  val temporaryDirectory = opt[Path](noshort = true, default = Some(Files.createTempDirectory("modularizer")))
-  verify()
+@AppName(BuildInfo.name)
+@AppVersion(BuildInfo.version)
+final case class Configuration(
+    gitUri: String,
+    gitUsername: Option[String],
+    gitPassword: Option[String],
+    listeningHost: String = "localhost",
+    listeningPort: Int = 42019,
+    numberOfTemporaryGitClones: Int = 3,
+    maxRetriesForUploading: Int = 3,
+    temporaryDirectory: Path = Files.createTempDirectory("modularizer"),
+)
+
+object Configuration {
+  // TODO: Delete this method once https://github.com/alexarchambault/case-app/pull/114 is merged
+  implicit val pathArgParser: ArgParser[Path] = {
+    def parsePath(pathString: String) = {
+      try {
+        Right(Paths.get(pathString))
+      } catch {
+        case e: InvalidPathException =>
+          Left(caseapp.core.Error.MalformedValue("path", e.getMessage))
+      }
+    }
+    ArgParser[String].xmapError(_.toString, parsePath)
+  }
 }
