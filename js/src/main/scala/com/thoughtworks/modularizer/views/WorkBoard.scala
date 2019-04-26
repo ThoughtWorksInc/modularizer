@@ -18,12 +18,15 @@ import typings.graphlibLib.graphlibMod.Graph
 import typings.stdLib.{GlobalFetch, RequestInit, Response}
 import upickle.default._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js.{Thenable, |}
-import scala.util.Success
 import scala.collection.immutable
 import org.scalajs.dom.raw.Event
 import typings.stdLib.stdLibStrings.`no-cache`
+
+private object WorkBoard {
+  private final val WeakETagRegex = """W/(.*)""".r
+}
 
 /**
   * @author 杨博 (Yang Bo)
@@ -32,6 +35,7 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
                                     gitStorageConfiguration: GitStorageUrlConfiguration,
                                     executionContext: ExecutionContext)
     extends Page {
+  import WorkBoard._
 
   val graphJsonLoader = new GraphJsonLoader(branch)
   val ruleJsonLoader = new RuleJsonLoader(branch)
@@ -79,6 +83,23 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
     )
   }
 
+  /** Returns a `If-Match` HTTP request header.
+    *
+    * @note This method will convert weak ETags to strong ETags,
+    *       because `If-Match` MUST use strong comparison according to RFC7232.
+    *
+    * @see https://tools.ietf.org/html/rfc7232#section-3.1
+    *
+    */
+  private def ifMatch(eTag: String): (String, String) = {
+    eTag match {
+      case WeakETagRegex(strongETag) =>
+        "If-Match" -> strongETag
+      case strongETag =>
+        "If-Match" -> strongETag
+    }
+  }
+
   @dom
   def autoSave(rule: Binding[ClusteringRule],
                savedRule: Var[ClusteringRule],
@@ -91,7 +112,7 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
           RequestInit(cache = `no-cache`,
                       method = "PUT",
                       body = write(rule.bind),
-                      headers = StringDictionary(eTag.bind.map("If-Match" -> _).toSeq: _*))
+                      headers = StringDictionary(eTag.bind.map(ifMatch).toSeq: _*))
         )
       responsePromise
         .`then`[Response] { response: Response =>
