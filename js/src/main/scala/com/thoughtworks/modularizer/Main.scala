@@ -24,49 +24,49 @@ import io.lemonlabs.uri.Path
 import scala.concurrent.Future
 import typings.stdLib.GlobalFetch
 
+final class Main(implicit fetcher: GlobalFetch,
+                 gitStorageConfiguration: GitStorageUrlConfiguration,
+                 executionContext: ExecutionContext) {
+
+  val route = new com.thoughtworks.modularizer.utilities.HashRoute
+
+  val currentState = route {
+    case () =>
+      Binding {
+        page.bind match {
+          case homePage: HomePage =>
+            homePage.branch.bind match {
+              case Some(branch) =>
+                s"work-board/$branch"
+              case _ =>
+                ""
+            }
+          case workBoard: WorkBoard =>
+            s"work-board/${workBoard.branch}"
+        }
+      }
+  }
+
+  val page: Binding[Page] = Binding {
+    val hash = Url.parse(currentState.bind) // TODO: 实现一套 UrlBinding
+    hash match {
+      case Url(PathParts("work-board", branch, rest @ _*), queryString, None) =>
+        new WorkBoard(branch)
+      case _ =>
+        new HomePage
+    }
+  }
+
+  val view = {
+    page.flatMap(_.view)
+  }
+
+}
+
 /**
   * @author 杨博 (Yang Bo)
   */
 object Main {
-
-  class RootView(implicit fetcher: GlobalFetch,
-                 gitStorageConfiguration: GitStorageUrlConfiguration,
-                 executionContext: ExecutionContext) {
-
-    val route = new com.thoughtworks.modularizer.utilities.HashRoute
-
-    val currentState = route {
-      case () =>
-        Binding {
-          page.bind match {
-            case homePage: HomePage =>
-              homePage.branch.bind match {
-                case Some(branch) =>
-                  s"work-board/$branch"
-                case _ =>
-                  ""
-              }
-            case workBoard: WorkBoard =>
-              s"work-board/${workBoard.branch}"
-          }
-        }
-    }
-
-    val page: Binding[Page] = Binding {
-      val hash = Url.parse(currentState.bind) // TODO: 实现一套 UrlBinding
-      hash match {
-        case Url(PathParts("work-board", branch, rest @ _*), queryString, None) =>
-          new WorkBoard(branch)
-        case _ =>
-          new HomePage
-      }
-    }
-
-    val view = {
-      page.flatMap(_.view)
-    }
-
-  }
 
   def main(args: Array[String]): Unit = {
     typings.bootstrapLib.bootstrapLibRequire
@@ -75,7 +75,7 @@ object Main {
     implicit val fetcher = stdLib.^.window
     import ExecutionContext.Implicits.global
 
-    val rootView = new RootView
+    val rootView = new Main
     dom.render(document.body, rootView.view)
   }
 
