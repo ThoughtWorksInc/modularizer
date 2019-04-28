@@ -17,7 +17,7 @@ import akka.stream.scaladsl.FileIO
 import com.thoughtworks.akka.http.WebJarsSupport._
 import com.thoughtworks.dsl.Dsl
 import com.thoughtworks.dsl.Dsl.!!
-import com.thoughtworks.dsl.keywords.NullSafe._
+import com.thoughtworks.dsl.keywords.NoneSafe.implicitNoneSafe
 import com.thoughtworks.dsl.keywords.{Await, Return, Using}
 import com.typesafe.scalalogging.Logger
 import io.github.lhotari.akka.http.health.HealthEndpoint._
@@ -60,11 +60,9 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
     Http.apply().bindAndHandle(route, configuration.listeningHost, configuration.listeningPort)
   }
 
-  private val credentialsProviderOption: Option[UsernamePasswordCredentialsProvider] =
-    for {
-      gitUsername <- configuration.gitUsername
-      gitPassword <- configuration.gitPassword
-    } yield new UsernamePasswordCredentialsProvider(gitUsername, gitPassword)
+  private def credentialsProviderOption: Option[UsernamePasswordCredentialsProvider] = {
+    Some(new UsernamePasswordCredentialsProvider(!configuration.gitUsername, !configuration.gitPassword))
+  }
 
   def route: Route = {
     respondWithHeader(`Cache-Control`(`max-age`(0))) {

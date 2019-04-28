@@ -48,19 +48,21 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
 
-addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.1.1+4-1b838f6a")
+addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.1.1+23-b7dac581")
 
-addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-reseteverywhere" % "1.1.1+4-1b838f6a")
+addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-reseteverywhere" % "1.1.1+23-b7dac581")
 
-libraryDependencies += "com.thoughtworks.dsl" %% "keywords-await" % "1.1.1+4-1b838f6a"
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-await" % "1.1.1+23-b7dac581"
 
-libraryDependencies += "com.thoughtworks.dsl" %% "keywords-catch" % "1.1.1+4-1b838f6a"
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-catch" % "1.1.1+23-b7dac581"
 
-libraryDependencies += "com.thoughtworks.dsl" %% "keywords-return" % "1.1.1+4-1b838f6a"
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-return" % "1.1.1+23-b7dac581"
 
-libraryDependencies += "com.thoughtworks.dsl" %% "keywords-nullsafe" % "1.1.1+4-1b838f6a"
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-nullsafe" % "1.1.1+23-b7dac581"
 
-libraryDependencies += "com.thoughtworks.dsl" %% "keywords-using" % "1.1.1+4-1b838f6a"
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-nonesafe" % "1.1.1+23-b7dac581"
+
+libraryDependencies += "com.thoughtworks.dsl" %% "keywords-using" % "1.1.1+23-b7dac581"
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
 
