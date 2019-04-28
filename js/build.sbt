@@ -46,6 +46,9 @@ npmDependencies in Compile += "d3-shape" -> "1.3.5"
 libraryDependencies += ScalablyTyped.G.`graphlib-dot`
 npmDependencies in Compile += "graphlib-dot" -> "0.6.2"
 
+libraryDependencies += ScalablyTyped.F.`file-saver`
+npmDependencies in Compile += "file-saver" -> "2.0.1"
+
 libraryDependencies += ScalablyTyped.B.bootstrap
 npmDependencies in Compile += "bootstrap" -> "4.3.1"
 npmDependencies in Compile += "jquery" -> "3.3.1"

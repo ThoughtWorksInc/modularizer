@@ -13,16 +13,18 @@ import com.thoughtworks.modularizer.js.views.workboard.{
   SummaryDiagram
 }
 import org.scalablytyped.runtime.StringDictionary
-import org.scalajs.dom.raw.Node
+import org.scalajs.dom.raw.{Event, Node}
+import typings.graphlibLib.graphlibMod
 import typings.graphlibLib.graphlibMod.Graph
-import typings.stdLib.{GlobalFetch, RequestInit, Response}
+import typings.stdLib.{Blob, BlobPropertyBag, GlobalFetch, RequestInit, Response}
 import upickle.default._
 
 import scala.concurrent.ExecutionContext
-import scala.scalajs.js.{Thenable, |}
+import scala.scalajs.js.{JSON, Thenable, |}
 import scala.collection.immutable
-import org.scalajs.dom.raw.Event
 import typings.stdLib.stdLibStrings.`no-cache`
+
+import scala.scalajs.js
 
 private object WorkBoard {
   private final val WeakETagRegex = """W/(.*)""".r
@@ -68,14 +70,40 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
           {
             summaryDiagram.view.bind
           }
-          <div class="position-sticky flex-row" style:bottom="0">
-            <button
-              type="button"
-              class="btn btn-primary position-sticky ml-auto d-block m-3"
-              onclick={ _: Event=>
-                rule.value = ClusteringRule(breakingEdges.value.to[immutable.Seq], draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
-              }
-            ><span class="fas fa-save"></span></button>
+          <div class="position-sticky" style:bottom="0">
+            <div class="btn-toolbar m-3" data:role="toolbar" style="justify-content:flex-end">
+              <div class="btn-group" data:role="group">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  onclick={ _: Event=>
+                    rule.value = ClusteringRule(breakingEdges.value.to[immutable.Seq], draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
+                  }
+                >
+                  <span class="fas fa-save"></span>
+                  Save &amp; Refresh
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick={
+                    val compoundGraph = clusteringReport.bind.compoundGraph
+                    locally { _: Event =>
+                      typings.fileDashSaverLib.fileDashSaverMod.^.saveAs(
+                        Blob.newInstance2(
+                          js.Array(JSON.stringify(graphlibMod.jsonNs.write(compoundGraph))),
+                          BlobPropertyBag(`type` = "text/json")
+                        ),
+                        filename = "compoundGraph.json"
+                      )
+                    }
+                  }
+                >
+                  <span class="fas fa-download"></span>
+                  Download result
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         { ruleEditor.view.bind }
