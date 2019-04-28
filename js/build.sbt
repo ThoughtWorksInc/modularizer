@@ -61,4 +61,4 @@ scalacOptions += "-P:scalajs:sjsDefinedByDefault"
 
 publish / skip := true
 
-buildInfoPackage := "com.thoughtworks.modularizer"
+buildInfoPackage := "com.thoughtworks.modularizer.js"
