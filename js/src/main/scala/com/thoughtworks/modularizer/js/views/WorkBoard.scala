@@ -121,8 +121,8 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
     */
   private def ifMatch(eTag: String): (String, String) = {
     eTag match {
-      case WeakETagRegex(strongETag) =>
-        "If-Match" -> strongETag
+      case WeakETagRegex(eTag) =>
+        "If-Match" -> eTag
       case strongETag =>
         "If-Match" -> strongETag
     }
