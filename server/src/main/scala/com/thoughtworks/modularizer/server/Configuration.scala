@@ -4,7 +4,6 @@ import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
 import caseapp.{AppName, AppVersion, ProgName}
 import caseapp.core.argparser.ArgParser
-import com.thoughtworks.modularizer.BuildInfo
 
 /**
   * @author 杨博 (Yang Bo)
