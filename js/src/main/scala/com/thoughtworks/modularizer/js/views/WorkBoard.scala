@@ -1,17 +1,10 @@
 package com.thoughtworks.modularizer.js.views
 import com.thoughtworks.binding.bindable._
-import com.thoughtworks.binding.Binding.{Constants, Var, Vars}
+import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, DraftCluster}
 import com.thoughtworks.modularizer.js.services.GitStorageUrlConfiguration
-import com.thoughtworks.modularizer.js.views.workboard.{
-  BreakingEdgeList,
-  DependencyExplorer,
-  GraphJsonLoader,
-  RuleEditor,
-  RuleJsonLoader,
-  SummaryDiagram
-}
+import com.thoughtworks.modularizer.js.views.workboard.{BreakingEdgeList, DependencyExplorer, GraphJsonLoader, RuleEditor, RuleJsonLoader, SummaryDiagram}
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.{Event, Node}
 import typings.graphlibLib.graphlibMod
@@ -43,7 +36,7 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
   val ruleJsonLoader = new RuleJsonLoader(branch)
 
   @dom
-  def board(graph: Graph, initialRule: ClusteringRule, initialETag: Option[String]): Binding[Constants[Node]] = {
+  def board(graph: Graph, initialRule: ClusteringRule, initialETag: Option[String]): Binding[BindingSeq[Node]] = {
     val rule = Var(initialRule)
     val eTag = Var(initialETag)
     val savedRule = Var(initialRule)
@@ -59,56 +52,55 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
     val summaryDiagram = new SummaryDiagram(graph, draftClusters, breakingEdges, rule, clusteringReport)
     val breakingEdgeList = new BreakingEdgeList(breakingEdges)
 
-    Constants(
-      autoSave(rule, savedRule, eTag).bind,
-      <div class="d-flex flex-row flex-grow-1" style:minHeight="0">
-        { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
-        <div class="col-5" style:overflowY="auto">
-          {
-            breakingEdgeList.view.bindSeq
-          }
-          {
-            summaryDiagram.view.bind
-          }
-          <div class="position-sticky" style:bottom="0">
-            <div class="btn-toolbar m-3" data:role="toolbar" style="justify-content:flex-end">
-              <div class="btn-group" data:role="group">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  onclick={ _: Event=>
-                    rule.value = ClusteringRule(breakingEdges.value.to[immutable.Seq], draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
+    <div>{autoSave(rule, savedRule, eTag).bind}</div>
+    <div class="d-flex flex-row flex-grow-1" style:minHeight="0">
+      { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
+      <div class="col-5" style:overflowY="auto">
+        {
+          breakingEdgeList.view.bindSeq
+        }
+        {
+          summaryDiagram.view.bind
+        }
+        <div class="position-sticky" style:bottom="0">
+          <div class="btn-toolbar m-3" data:role="toolbar" style="justify-content:flex-end">
+            <div class="btn-group" data:role="group">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick={ _: Event=>
+                  rule.value = ClusteringRule(breakingEdges.value.to[immutable.Seq], draftClusters.value.view.map(_.buildCluster).to[immutable.Seq])
+                }
+              >
+                <span class="fas fa-save"></span>
+                Save &amp; Refresh
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick={
+                  val compoundGraph = clusteringReport.bind.compoundGraph
+                  locally { _: Event =>
+                    typings.fileDashSaverLib.fileDashSaverMod.^.saveAs(
+                      Blob.newInstance2(
+                        js.Array(JSON.stringify(graphlibMod.jsonNs.write(compoundGraph))),
+                        BlobPropertyBag(`type` = "text/json")
+                      ),
+                      filename = "compoundGraph.json"
+                    )
                   }
-                >
-                  <span class="fas fa-save"></span>
-                  Save &amp; Refresh
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onclick={
-                    val compoundGraph = clusteringReport.bind.compoundGraph
-                    locally { _: Event =>
-                      typings.fileDashSaverLib.fileDashSaverMod.^.saveAs(
-                        Blob.newInstance2(
-                          js.Array(JSON.stringify(graphlibMod.jsonNs.write(compoundGraph))),
-                          BlobPropertyBag(`type` = "text/json")
-                        ),
-                        filename = "compoundGraph.json"
-                      )
-                    }
-                  }
-                >
-                  <span class="fas fa-download"></span>
-                  Download result
-                </button>
-              </div>
+                }
+              >
+                <span class="fas fa-download"></span>
+                Download Result
+              </button>
             </div>
           </div>
         </div>
-        { ruleEditor.view.bind }
       </div>
-    )
+      { ruleEditor.view.bind }
+    </div>
+
   }
 
   /** Returns a `If-Match` HTTP request header.
