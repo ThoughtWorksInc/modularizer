@@ -27,7 +27,7 @@ libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.1.0"
 
-libraryDependencies += "com.thoughtworks.dsl" %%% "dsl" % "1.1.1+18-0516ac07"
+libraryDependencies += "com.thoughtworks.dsl" %%% "dsl" % "1.1.1+23-b7dac581"
 
 libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "1.4.4"
 

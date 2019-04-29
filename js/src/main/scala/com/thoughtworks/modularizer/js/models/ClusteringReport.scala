@@ -1,25 +1,25 @@
 package com.thoughtworks.modularizer.js.models
 
+import com.thoughtworks.binding.Binding
+import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.modularizer.js.models.ClusteringRule.Cluster
 import com.thoughtworks.modularizer.js.utilities._
 import org.scalablytyped.runtime.StringDictionary
 import typings.graphlibLib.graphlibMod._
 
 import scala.annotation.tailrec
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
+import org.scalajs.dom.window
 
 /**
   * @author 杨博 (Yang Bo)
   */
-final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
+final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule)(implicit executionContext: ExecutionContext) {
   import ClusteringReport._
   import rule._
-  val compoundGraph = new Graph(new GraphOptions {
-    compound = true
-    directed = true
-    multigraph = false
-  })
+  val compoundGraph = new Graph(GraphOptions(compound = true, directed = true, multigraph = false))
 
   compoundGraph.setNodes(simpleGraph.nodes())
   for (edge <- simpleGraph.edges()) {
@@ -30,23 +30,22 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
     compoundGraph.removeEdge(v, w)
   }
 
-  // TODO: 确保所有 cluster 之间不能互相依赖
   for (Cluster(parent, children) <- clusters) {
     for (child <- children) {
       compoundGraph.setParent(child, parent)
     }
   }
-  val clusterIds: js.Array[String] = clusters.view.map(_.parent).toJSArray
 
-  val dependencyPaths: StringDictionary[StringDictionary[Path]] = calculateDependencies(compoundGraph, clusterIds)
-  val dependentPaths: StringDictionary[StringDictionary[Path]] = calculateDependents(compoundGraph, clusterIds)
+  val clusterIds: js.Array[String] = clusters.view.map(_.parent).toJSArray
+  private val priorities = clusterIds.view.zipWithIndex.toMap
 
   private def notCluster(node: String): Boolean = compoundGraph.children(node).isEmpty
 
   private def notAssignedToCluster(currentNodeId: String): Boolean = js.isUndefined(compoundGraph.parent(currentNodeId))
 
-  {
-    val priorities = clusterIds.view.zipWithIndex.toMap
+  private def findParent(dependentPaths: StringDictionary[StringDictionary[Path]],
+                         dependencyPaths: StringDictionary[StringDictionary[Path]],
+                         currentNodeId: String): Option[String] = {
     /*
     1. 如果只直接依赖一个cluster，那么属于这个cluster
     2. 如果只被一个cluster直接依赖，那么属于这个cluster
@@ -54,42 +53,80 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule) {
     4. 如果是不依赖任何cluster，放入 Sink 包
     5. 否则不放入任何cluster
      */
-    for (currentNodeId <- compoundGraph.nodes()) {
-      if (notCluster(currentNodeId) && notAssignedToCluster(currentNodeId)) {
-        findNearestClusters(dependentPaths, clusterIds, currentNodeId) match {
-          case Seq(clusterId) =>
-            findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
-              case Seq(clusterId2) =>
-                compoundGraph.setParent(currentNodeId, js.Array(clusterId, clusterId2).minBy(priorities))
-              case _ =>
-                compoundGraph.setParent(currentNodeId, clusterId)
-            }
-          case Seq() =>
-            findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
-              case Seq(clusterId) =>
-                compoundGraph.setParent(currentNodeId, clusterId)
-              case Seq() =>
-                compoundGraph.setParent(currentNodeId, "Facades")
-              case _ =>
-                compoundGraph.setParent(currentNodeId, "Utilities")
-            }
+    findNearestClusters(dependentPaths, clusterIds, currentNodeId) match {
+      case Seq(clusterId) =>
+        findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
+          case Seq(clusterId2) =>
+            Some(js.Array(clusterId, clusterId2).minBy(priorities))
           case _ =>
-            findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
-              case Seq(clusterId) =>
-                compoundGraph.setParent(currentNodeId, clusterId)
-              case Seq() =>
-                compoundGraph.setParent(currentNodeId, "Facades")
-              case _ =>
-            }
+            Some(clusterId)
         }
+      case Seq() =>
+        findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
+          case Seq(clusterId) =>
+            Some(clusterId)
+          case Seq() =>
+            None
+          case _ =>
+            Some("Utilities")
+        }
+      case _ =>
+        findNearestClusters(dependencyPaths, clusterIds, currentNodeId) match {
+          case Seq(clusterId) =>
+            Some(clusterId)
+          case Seq() =>
+            Some("Facades")
+          case _ =>
+            Some("Conflicts")
+        }
+    }
+  }
+
+  private final class Assignment(nodeIds: js.Array[String]) {
+    val dependencyPaths: StringDictionary[StringDictionary[Path]] = calculateDependencies(compoundGraph, clusterIds)
+    val dependentPaths: StringDictionary[StringDictionary[Path]] = calculateDependents(compoundGraph, clusterIds)
+    val unassigned = new js.Array[String](0)
+    for (currentNodeId <- nodeIds) {
+      findParent(dependentPaths, dependencyPaths, currentNodeId) match {
+        case None =>
+          unassigned += currentNodeId
+        case Some(parent) =>
+          compoundGraph.setParent(currentNodeId, parent)
       }
     }
   }
-  dependencyPaths("Facades") =
-    algNs.dijkstra(compoundGraph, "Facades", Function.const(1.0), lookupDependencies(compoundGraph, _))
 
-  dependentPaths("Utilities") =
-    algNs.dijkstra(compoundGraph, "Utilities", Function.const(1.0), lookupDependents(compoundGraph, _))
+  private val initialAssignment = new Assignment(compoundGraph.nodes().filter { currentNodeId =>
+    notCluster(currentNodeId) && notAssignedToCluster(currentNodeId)
+  })
+
+  val unassignedNodes: Var[js.Array[String]] = Var(initialAssignment.unassigned)
+
+  def dependencyPaths: StringDictionary[StringDictionary[Path]] = initialAssignment.dependencyPaths
+  def dependentPaths: StringDictionary[StringDictionary[Path]] = initialAssignment.dependentPaths
+
+  // FIXME: 修复 Facades 依赖图绘制逻辑
+  // FIXME: 修复 Utilities 依赖图绘制逻辑
+
+  private def nextFrame(): Future[Unit] = {
+    val p = Promise[Unit]
+    window.requestAnimationFrame { _ =>
+      p.success(())
+    }
+    p.future
+  }
+
+  def assignAll(nodeIds: js.Array[String] = initialAssignment.unassigned): Future[Unit] = {
+    nextFrame().flatMap { _: Unit =>
+      val restNodeIds = new Assignment(nodeIds).unassigned
+      if (restNodeIds.length != nodeIds.length) {
+        unassignedNodes.value = restNodeIds
+        assignAll(restNodeIds)
+      } else {
+        Future.successful()
+      }
+    }
+  }
 
 }
 

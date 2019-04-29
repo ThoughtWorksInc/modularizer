@@ -40,4 +40,10 @@ package object utilities {
 
   implicit final class SvgTags(x: TagsAndTags2.type) extends JsDom.Cap with scalatags.jsdom.SvgTags
 
+  implicit final class TapOps[A](private val a: A) extends AnyVal {
+    def tap[U](f: A => U): A = {
+      f(a)
+      a
+    }
+  }
 }

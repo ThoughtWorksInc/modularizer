@@ -19,8 +19,10 @@ class CustomClusterCard(draftClusters: Vars[DraftCluster],
 
   private val selectLocked = new MultipleSelect(draftCluster.nodeIds)
   private val selectUnlocked = new MultipleSelect(Binding {
+    val report = clusteringReport.bind
+    val _ = report.unassignedNodes
     val allChildNodes = UndefOr
-      .any2undefOrA(clusteringReport.bind.compoundGraph.children(draftCluster.name.value))
+      .any2undefOrA(report.compoundGraph.children(draftCluster.name.value))
       .getOrElse(js.Array())
     allChildNodes -- draftCluster.nodeIds.all.bind
   })

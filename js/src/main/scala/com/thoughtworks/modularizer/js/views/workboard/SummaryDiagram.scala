@@ -29,6 +29,8 @@ class SummaryDiagram(simpleGraph: Graph,
                      breakingEdges: Vars[(String, String)],
                      clusteringRule: Var[ClusteringRule],
                      clusteringReport: Binding[ClusteringReport]) {
+  //TODO: Draw selected nodes on diagram
+
   @dom
   val view: Binding[Node] = {
     val svg: SVGSVGElement = <svg
@@ -75,43 +77,6 @@ class SummaryDiagram(simpleGraph: Graph,
     g.setGraph(new GraphLabel {
       compound = true
     })
-
-    g.setNode(
-      "Utilities",
-      StringDictionary[js.Any](
-        "label" -> "",
-        "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
-      )
-    )
-    g.setNode(
-      "label_Utilities",
-      StringDictionary[js.Any](
-        "rank" -> "max",
-        "label" -> "Utilities",
-//            "clusterLabelPos" -> "top",
-        "style" -> "stroke: none; fill-opacity: 0"
-      )
-    )
-    g.setParent("label_Utilities", "Utilities")
-
-    g.setNode(
-      "Facades",
-      StringDictionary[js.Any](
-        "label" -> "",
-        "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
-      )
-    )
-
-    g.setNode(
-      "label_Facades",
-      StringDictionary[js.Any](
-        "rank" -> "max",
-        "label" -> "Facades",
-//            "clusterLabelPos" -> "top",
-        "style" -> "stroke: none; fill-opacity: 0"
-      )
-    )
-    g.setParent("label_Facades", "Facades")
     for (cluster <- clusters) {
       val id = cluster.parent
       g.setNode(
@@ -180,20 +145,6 @@ class SummaryDiagram(simpleGraph: Graph,
       }
 
       loop(from)
-    }
-
-    for (clusterIdUsedByFacades <- ClusteringReport
-           .findNearestClusters(report.dependentPaths, report.clusterIds :+ "Utilities", "Facades")) {
-      addKeyPath(report.dependentPaths, "Facades", clusterIdUsedByFacades, { (from, to) =>
-        g.setEdge(from, to)
-      })
-    }
-
-    for (clusterIdThatDependsOnUtilities <- ClusteringReport
-           .findNearestClusters(report.dependencyPaths, report.clusterIds, "Utilities")) {
-      addKeyPath(report.dependencyPaths, "Utilities", clusterIdThatDependsOnUtilities, { (to, from) =>
-        g.setEdge(from, to)
-      })
     }
 
     for (from <- clusters) {

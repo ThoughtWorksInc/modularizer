@@ -1,4 +1,5 @@
 package com.thoughtworks.modularizer.js.views
+import com.thoughtworks.modularizer.js.utilities._
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
@@ -45,7 +46,7 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
       DraftCluster.loadFrom(cluster, DraftCluster.CustomClusterColors(i % DraftCluster.CustomClusterColors.length))
     }): _*)
     val clusteringReport = Binding {
-      new ClusteringReport(graph, rule.bind)
+      new ClusteringReport(graph, rule.bind).tap(_.assignAll())
     }
 
     val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
