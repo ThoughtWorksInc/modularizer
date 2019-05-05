@@ -10,8 +10,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js.URIUtils.decodeURIComponent
 import scala.util.Success
 
+// TODO: Move to https://github.com/ThoughtWorksInc/HashRoute.scala
 /** Bidirectional data-binding between the page state built from UI events and the page state parsed from URL hash. */
 final case class HashRoute(window: Window = window) extends AnyVal with Keyword[HashRoute, Unit]
+
 object HashRoute {
 
   private def trimHash(): String = {
@@ -46,32 +48,3 @@ object HashRoute {
 
   }
 }
-//class HashRoute(hashInput: => Binding[String], window: Window = window)(implicit executionContext: ExecutionContext) {
-//
-//  /** The page state triggered by URL hash change. */
-//  final def hashOutput = Binding {
-//    FutureBinding(Future {}).bind match {
-//      case Some(Success(())) =>
-//        val currentState = hashInput.bind
-//        window.location.hash = currentState
-//        new LatestEvent[Event](window, "hashchange").bind match {
-//          case None =>
-//            currentState
-//          case Some(event) =>
-//            trimHash()
-//        }
-//      case _ =>
-//        trimHash()
-//    }
-//  }
-//
-//  private def trimHash() = {
-//    decodeURIComponent(window.location.hash match {
-//      case hashText if hashText.startsWith("#") =>
-//        hashText.substring(1)
-//      case hashText =>
-//        hashText
-//    })
-//  }
-//
-//}
