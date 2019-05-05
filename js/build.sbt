@@ -63,3 +63,13 @@ libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.7" % Test
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
 
 buildInfoPackage := "com.thoughtworks.modularizer.js"
+
+addBuildInfoToConfig(Test)
+
+Test / buildInfoObject ~= ("Test" + _)
+
+def dependencyGraph = Def.task {
+  IO.readLines((Compile / jdeps).value / s"${(Compile / classDirectory).value.getName}.dot")
+}
+
+Test / buildInfoKeys += BuildInfoKey.map(dependencyGraph.taskValue)(_.copy(_1 = "dependencyGraph"))
