@@ -1,28 +1,14 @@
 package com.thoughtworks.modularizer.js
-import com.thoughtworks.modularizer.js.utilities._
 import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
-import com.thoughtworks.binding.Binding.Var
-import com.thoughtworks.binding.Component.partialUpdate
 import com.thoughtworks.binding._
-import com.thoughtworks.modularizer.js.views._
-import com.thoughtworks.modularizer.js.models.PageState
-import com.thoughtworks.modularizer.js.models.PageState.WorkBoardState
 import com.thoughtworks.modularizer.js.services.GitStorageUrlConfiguration
-import com.thoughtworks.modularizer.js.views.{HomePage, WorkBoard}
+import com.thoughtworks.modularizer.js.views.{HomePage, WorkBoard, _}
+import io.lemonlabs.uri.{PathParts, Url}
 import org.scalajs.dom._
-import org.scalajs.dom.raw.Node
-import typings.graphlibLib.graphlibMod.Graph
 import typings.stdLib
-import typings.stdLib.Window
-import io.lemonlabs.uri.Url
-import scala.concurrent.ExecutionContext
-import scala.util.Failure
-import scala.util.Success
-import shapeless._
-import io.lemonlabs.uri.PathParts
-import io.lemonlabs.uri.Path
-import scala.concurrent.Future
 import typings.stdLib.GlobalFetch
+
+import scala.concurrent.ExecutionContext
 
 final class Main(implicit fetcher: GlobalFetch,
                  gitStorageConfiguration: GitStorageUrlConfiguration,
