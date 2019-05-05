@@ -11,6 +11,8 @@ webpackBundlingMode := BundlingMode.LibraryOnly()
 
 Compile / fastOptJS / relativeSourceMaps := false
 
+libraryDependencies += "com.thoughtworks.binding" %%% "nextanimationframe" % "0.1.0"
+
 libraryDependencies += "com.thoughtworks.binding" %%% "jspromisebinding" % "11.7.0+144-c34de6d5"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "futurebinding" % "11.7.0+144-c34de6d5"
@@ -27,7 +29,13 @@ libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.1.0"
 
-libraryDependencies += "com.thoughtworks.dsl" %%% "dsl" % "1.1.1+23-b7dac581"
+addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.1.1+23-b7dac581")
+
+libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-await" % "1.1.1+23-b7dac581"
+
+libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-yield" % "1.1.1+23-b7dac581"
+
+libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-each" % "1.1.1+23-b7dac581"
 
 libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "1.4.4"
 

@@ -3,9 +3,22 @@ import com.thoughtworks.modularizer.js.utilities._
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.js.models.{
+  ClusteringReport,
+//  ClusteringReport2,
+  ClusteringRule,
+  CompoundGraph,
+  DraftCluster
+}
 import com.thoughtworks.modularizer.js.services.GitStorageUrlConfiguration
-import com.thoughtworks.modularizer.js.views.workboard.{BreakingEdgeList, DependencyExplorer, GraphJsonLoader, RuleEditor, RuleJsonLoader, SummaryDiagram}
+import com.thoughtworks.modularizer.js.views.workboard.{
+  BreakingEdgeList,
+  DependencyExplorer,
+  GraphJsonLoader,
+  RuleEditor,
+  RuleJsonLoader,
+  SummaryDiagram
+}
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.{Event, Node}
 import typings.graphlibLib.graphlibMod
@@ -49,13 +62,21 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
       new ClusteringReport(graph, rule.bind).tap(_.assignAll())
     }
 
+//    val clusteringReport2 = Binding {
+//      new ClusteringReport2(CompoundGraph(graph, rule.bind)).tap(_.startAssign())
+//    }
+
+//    val clusteringReport = Binding {
+//      new ClusteringReport(graph, rule.bind).tap(_.assignAll())
+//    }
+
     val ruleEditor = new RuleEditor(draftClusters, rule, clusteringReport)
     val summaryDiagram = new SummaryDiagram(graph, draftClusters, breakingEdges, rule, clusteringReport)
     val breakingEdgeList = new BreakingEdgeList(breakingEdges)
 
     <div>{autoSave(rule, savedRule, eTag).bind}</div>
     <div class="d-flex flex-row flex-grow-1" style:minHeight="0">
-      { DependencyExplorer.render(graph, draftClusters, clusteringReport, rule, ruleEditor.selectedNodeIds).bind }
+      { DependencyExplorer.render(graph, draftClusters, ??? /* TODO */, rule, ruleEditor.selectedNodeIds).bind }
       <div class="col-5" style:overflowY="auto">
         {
           breakingEdgeList.view.bindSeq
