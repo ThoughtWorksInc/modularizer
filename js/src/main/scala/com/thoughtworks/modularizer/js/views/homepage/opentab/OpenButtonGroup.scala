@@ -41,7 +41,7 @@ class OpenButtonGroup(branchName: Binding[Option[String]])(implicit fetcher: Glo
               event.preventDefault()
               isClicked.value = true
             }
-          >Import</button>
+          >Open</button>
         </div>
     }
 
