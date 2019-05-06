@@ -49,8 +49,8 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule)(implicit 
     /*
     1. 如果只直接依赖一个cluster，那么属于这个cluster
     2. 如果只被一个cluster直接依赖，那么属于这个cluster
-    3. 如果是不被任何cluster依赖，放入 Source 包
-    4. 如果是不依赖任何cluster，放入 Sink 包
+    3. 如果是不被任何cluster依赖，放入 Facades 包
+    4. 如果是不依赖任何cluster，放入 Utilities 包
     5. 否则不放入任何cluster
      */
     findNearestClusters(dependentPaths, clusterIds, currentNodeId) match {
