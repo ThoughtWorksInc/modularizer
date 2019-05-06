@@ -12,13 +12,13 @@ import com.thoughtworks.modularizer.js.models.JdepsGraph._
 
 /** Contains utilities on graph produced by `jdeps`
   *
+  * @param underlying The graph produced by `jdeps`
   * @author 杨博 (Yang Bo)
   */
-final case class JdepsGraph(jdepsGraph: Graph) extends AnyVal {
+final case class JdepsGraph(underlying: Graph) extends AnyVal {
 
   /** Returns a new graph, which contains only internal dependencies.
     *
-    * @param jdepsGraph The graph produced by `jdeps`
     * @example Given a graph parsed from a DOT file,
     *
     *          {{{
@@ -64,10 +64,10 @@ final case class JdepsGraph(jdepsGraph: Graph) extends AnyVal {
       directed = true
       multigraph = false
     })
-    for (edge <- jdepsGraph.edges) {
+    for (edge <- underlying.edges) {
       internalGraph.setNode(edge.v)
     }
-    for (edge <- jdepsGraph.edges) {
+    for (edge <- underlying.edges) {
       val BeforeSpace(target) = edge.w
       if (internalGraph.hasNode(target)) {
         internalGraph.setEdge(edge.v, target)
