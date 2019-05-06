@@ -1,15 +1,16 @@
 package com.thoughtworks.modularizer.js.views.workboard
 
-import com.thoughtworks.binding.Binding.{Var, Vars}
-import com.thoughtworks.binding.{LatestEvent, dom}
+import com.thoughtworks.binding.Binding.Vars
+import com.thoughtworks.binding.{Binding, LatestEvent, dom}
 import org.scalajs.dom.raw.Event
+import org.scalajs.dom.raw.Node
 
 /**
   * @author 杨博 (Yang Bo)
   */
 class BreakingEdgeList(breakingEdges: Vars[(String, String)]) {
   @dom
-  def view = {
+  def view: Binding[Node] = {
     <div class="card my-2">
       <div class="card-body">
         <details>
