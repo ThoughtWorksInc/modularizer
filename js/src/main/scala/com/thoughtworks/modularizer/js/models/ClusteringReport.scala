@@ -123,7 +123,7 @@ final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule)(implicit 
         unassignedNodes.value = restNodeIds
         assignAll(restNodeIds)
       } else {
-        Future.successful()
+        Future.successful(())
       }
     }
   }
