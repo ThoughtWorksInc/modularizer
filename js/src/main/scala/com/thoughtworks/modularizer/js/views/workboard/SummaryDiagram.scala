@@ -3,6 +3,7 @@ package com.thoughtworks.modularizer.js.views.workboard
 import com.thoughtworks.binding.Binding._
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.js.services.ClusteringService
 import com.thoughtworks.modularizer.js.utilities._
 import org.scalablytyped.runtime.StringDictionary
 import org.scalajs.dom.raw.SVGPreserveAspectRatio._
@@ -26,139 +27,145 @@ import scala.xml.Xhtml
   */
 class SummaryDiagram(breakingEdges: Vars[(String, String)],
                      clusteringRule: Var[ClusteringRule],
-                     clusteringReport: Binding[ClusteringReport]) {
+                     clusteringService: ClusteringService) {
   //TODO: Draw selected nodes on diagram
 
   @dom
   val view: Binding[Node] = {
-    val svg: SVGSVGElement = <svg
-      preserveAspectRatio:baseVal:align={SVG_PRESERVEASPECTRATIO_XMIDYMID}
-      preserveAspectRatio:baseVal:meetOrSlice={SVG_MEETORSLICE_MEET}
-      onclick={ event: Event =>
-        val parentButton = event.target.asInstanceOf[js.Dynamic].closest("[v],[w]").asInstanceOf[HTMLButtonElement]
-        if (parentButton != null) {
-          parentButton.style.display = "none"
-          breakingEdges.value += parentButton.getAttribute("v") -> parentButton.getAttribute("w")
-        }
-      }
-    ></svg>
-    val render = dagreDashD3Mod.render.newInstance0()
-    for ((arrowType, arrowRender) <- render.arrows()) {
-      render.arrows()(arrowType) = { (parent, id, edge, arrowType) =>
-        arrowRender(parent, id, edge, arrowType)
-      }
-    }
-//    console.log(render.arrows())
-    val graphD3 = buildGraphD3.bind
-    window.requestAnimationFrame { _ =>
-      render(d3DashSelectionMod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
-      val boundBox = svg.getBBox()
-      svg.viewBox.baseVal.x = boundBox.x
-      svg.viewBox.baseVal.y = boundBox.y
-      svg.viewBox.baseVal.width = boundBox.width
-      svg.viewBox.baseVal.height = boundBox.height
-    }
-    svg
-  }
-
-  def buildGraphD3: Binding[GraphD3] = Binding {
-    val report = clusteringReport.bind
-    val clusters = clusteringRule.bind.clusters
-
-    val g =
-      new GraphD3(new Anon_Compound {
-        compound = true
-        directed = true
-        multigraph = false
-      })
-
-    g.setGraph(new GraphLabel {
-      compound = true
-    })
-    for (cluster <- clusters) {
-      val id = cluster.parent
-      g.setNode(
-        id,
-        StringDictionary[js.Any](
-          "label" -> "",
-//            "clusterLabelPos" -> "top",
-          "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
-        )
-      )
-
-      val labelId = s"label_$id"
-      g.setNode(
-        labelId,
-        StringDictionary[js.Any](
-          "rank" -> "max",
-          "label" -> id,
-//            "clusterLabelPos" -> "top",
-          "style" -> "stroke: none; fill-opacity: 0"
-        )
-      )
-      g.setParent(labelId, id)
-    }
-
-    val defaultEdgeLabel: js.Function3[String, String, js.UndefOr[String], Label] = {
-      (v: String, w: String, name: js.UndefOr[String]) =>
-        StringDictionary[js.Any](
-          "curve" -> d3DashShapeMod.^.curveBasis,
-          "labelType" -> "html",
-          "label" -> Xhtml.toXhtml(
-            <button type="button" class="btn btn-link" v={v} w={w} title={s"Break $v→$w"}>
-              <span class="fas fa-unlink"></span>
-            </button>
-          )
-        )
-    }
-
-    // Workaround for https://github.com/DefinitelyTyped/DefinitelyTyped/pull/34977
-    g.asInstanceOf[js.Dynamic].setDefaultEdgeLabel(defaultEdgeLabel)
-
-    def addKeyPath(paths: StringDictionary[StringDictionary[Path]],
-                   from: String,
-                   clusterId: String,
-                   setEdge: (String, String) => Unit): Unit = {
-      val distancesToCluster = paths(clusterId)
-
-      @tailrec
-      def loop(from: String): Unit = {
-        if (from != clusterId) {
-          val predecessor = distancesToCluster(from).predecessor
-          val currentParent = report.compoundGraph.parent(from)
-          if (currentParent.isDefined) {
-            g.setNode(from,
-                      StringDictionary[js.Any](
-                        "label" -> from,
-                        //            "clusterLabelPos" -> "top",
-                        //            "style" -> "fill: #ffd47f",
-                      ))
-            g.setParent(from, currentParent.get)
-            if (report.compoundGraph.parent(predecessor).isDefined) {
-              setEdge(from, predecessor)
+    buildGraphD3.bind match {
+      case Some(graphD3) =>
+        val svg: SVGSVGElement = <svg
+          preserveAspectRatio:baseVal:align={SVG_PRESERVEASPECTRATIO_XMIDYMID}
+          preserveAspectRatio:baseVal:meetOrSlice={SVG_MEETORSLICE_MEET}
+          onclick={ event: Event =>
+            val parentButton = event.target.asInstanceOf[js.Dynamic].closest("[v],[w]").asInstanceOf[HTMLButtonElement]
+            if (parentButton != null) {
+              parentButton.style.display = "none"
+              breakingEdges.value += parentButton.getAttribute("v") -> parentButton.getAttribute("w")
             }
           }
-          loop(predecessor)
+        ></svg>
+        val render = dagreDashD3Mod.render.newInstance0()
+        for ((arrowType, arrowRender) <- render.arrows()) {
+          render.arrows()(arrowType) = { (parent, id, edge, arrowType) =>
+            arrowRender(parent, id, edge, arrowType)
+          }
         }
-      }
-
-      loop(from)
+        window.requestAnimationFrame { _ =>
+          render(d3DashSelectionMod.^.select(svg).asInstanceOf[Selection[_, _, BaseType, _]], graphD3)
+          val boundBox = svg.getBBox()
+          svg.viewBox.baseVal.x = boundBox.x
+          svg.viewBox.baseVal.y = boundBox.y
+          svg.viewBox.baseVal.width = boundBox.width
+          svg.viewBox.baseVal.height = boundBox.height
+        }
+        svg
+      case None =>
+        <!-- xxx -->
     }
-
-    for (from <- clusters) {
-      val dependencyClusterIds = ClusteringReport.findNearestClusters(report.dependentPaths, clusters.collect {
-        case to if to.parent != from.parent =>
-          to.parent
-      }, from.parent)
-
-      for (dependencyClusterId <- dependencyClusterIds) {
-        addKeyPath(report.dependentPaths, from.parent, dependencyClusterId, { (from, to) =>
-          g.setEdge(from, to)
-        })
-      }
-    }
-
-    g
   }
 
+  def buildGraphD3: Binding[Option[GraphD3]] = Binding {
+    clusteringService.underlyingCompoundGraph.bind match {
+      case None => None
+      case Some(compoundGraph) =>
+        val clusters = clusteringRule.bind.clusters
+        val dependentPaths = clusteringService.dependentPaths.bind
+
+        val g =
+          new GraphD3(new Anon_Compound {
+            compound = true
+            directed = true
+            multigraph = false
+          })
+
+        g.setGraph(new GraphLabel {
+          compound = true
+        })
+        for (cluster <- clusters) {
+          val id = cluster.parent
+          g.setNode(
+            id,
+            StringDictionary[js.Any](
+              "label" -> "",
+//            "clusterLabelPos" -> "top",
+              "style" -> "fill: #ffd47f" // TODO: add color property on ClusteringRule
+            )
+          )
+
+          val labelId = s"label_$id"
+          g.setNode(
+            labelId,
+            StringDictionary[js.Any](
+              "rank" -> "max",
+              "label" -> id,
+//            "clusterLabelPos" -> "top",
+              "style" -> "stroke: none; fill-opacity: 0"
+            )
+          )
+          g.setParent(labelId, id)
+        }
+
+        val defaultEdgeLabel: js.Function3[String, String, js.UndefOr[String], Label] = {
+          (v: String, w: String, name: js.UndefOr[String]) =>
+            StringDictionary[js.Any](
+              "curve" -> d3DashShapeMod.^.curveBasis,
+              "labelType" -> "html",
+              "label" -> Xhtml.toXhtml(
+                <button type="button" class="btn btn-link" v={v} w={w} title={s"Break $v→$w"}>
+              <span class="fas fa-unlink"></span>
+            </button>
+              )
+            )
+        }
+
+        // Workaround for https://github.com/DefinitelyTyped/DefinitelyTyped/pull/34977
+        g.asInstanceOf[js.Dynamic].setDefaultEdgeLabel(defaultEdgeLabel)
+
+        def addKeyPath(paths: StringDictionary[StringDictionary[Path]],
+                       from: String,
+                       clusterId: String,
+                       setEdge: (String, String) => Unit): Unit = {
+          val distancesToCluster = paths(clusterId)
+
+          @tailrec
+          def loop(from: String): Unit = {
+            if (from != clusterId) {
+              val predecessor = distancesToCluster(from).predecessor
+              val currentParent = compoundGraph.parent(from)
+              if (currentParent.isDefined) {
+                g.setNode(from,
+                          StringDictionary[js.Any](
+                            "label" -> from,
+                            //            "clusterLabelPos" -> "top",
+                            //            "style" -> "fill: #ffd47f",
+                          ))
+                g.setParent(from, currentParent.get)
+                if (compoundGraph.parent(predecessor).isDefined) {
+                  setEdge(from, predecessor)
+                }
+              }
+              loop(predecessor)
+            }
+          }
+
+          loop(from)
+        }
+
+        for (from <- clusters) {
+          val dependencyClusterIds = ClusteringReport.findNearestClusters(dependentPaths, clusters.collect {
+            case to if to.parent != from.parent =>
+              to.parent
+          }, from.parent)
+
+          for (dependencyClusterId <- dependencyClusterIds) {
+            addKeyPath(dependentPaths, from.parent, dependencyClusterId, { (from, to) =>
+              g.setEdge(from, to)
+            })
+          }
+        }
+
+        Some(g)
+    }
+  }
 }

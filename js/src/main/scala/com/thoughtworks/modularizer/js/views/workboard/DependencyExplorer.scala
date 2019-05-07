@@ -1,9 +1,11 @@
 package com.thoughtworks.modularizer.js.views.workboard
+import com.thoughtworks.modularizer.js.models.ClusterId
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, LatestEvent, LatestJQueryEvent, dom}
 import com.thoughtworks.binding.bindable._
-import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.js.models.{BuiltInClusterId, ClusteringRule, DraftCluster, NodeId}
 import DraftCluster._
+import com.thoughtworks.modularizer.js.services.ClusteringService
 import com.thoughtworks.modularizer.js.utilities._
 import org.scalajs.dom.raw._
 import org.scalajs.dom._
@@ -18,19 +20,6 @@ import scala.scalajs.js
   * @author 杨博 (Yang Bo)
   */
 object DependencyExplorer {
-
-  @dom
-  def dependencyList(graph: Graph, items: js.Array[String]): Binding[Node] = {
-    <div class="list-group">
-      <a href="#" class="list-group-item list-group-item-action active">
-        Cras justo odio
-      </a>
-      <a href="#" class="list-group-item list-group-item-action">Dapibus ac facilisis in</a>
-      <a href="#" class="list-group-item list-group-item-action">Morbi leo risus</a>
-      <a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>
-      <a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>
-    </div>
-  }
 
   @dom
   private def clusterTag(draftCluster: DraftCluster): Binding[Node] = {
@@ -52,8 +41,8 @@ object DependencyExplorer {
 
   @dom
   def neighborList(graph: Graph,
-                   clusteringReport: Binding[ClusteringReport],
-                   nodeId: String,
+                   clusteringReport: ClusteringService,
+                   nodeId: NodeId,
                    draftClusters: Vars[DraftCluster]): Binding[BindingSeq[Node]] = {
     <div class="d-flex flex-row align-items-baseline">
       <span title={ nodeId } style:direction="rtl" class="mr-auto flex-shrink-1 text-right text-truncate">{
@@ -71,14 +60,18 @@ object DependencyExplorer {
           currentClusterSeq.length.bind match {
             case 0 =>
               val clusterColor = Binding {
-                (clusteringReport.bind.compoundGraph.parent(nodeId): Any) match {
-                  case () =>
+                clusteringReport.getParent(nodeId).bind match {
+                  case None =>
                     UnassignedColorClass
-                  case "Facades" =>
+                  case Some(BuiltInClusterId.Facade) =>
                     FacadeColorClass
-                  case "Utilities" =>
+                  case Some(BuiltInClusterId.Utility) =>
                     UtilityColorClass
-                  case customCluster: String =>
+                  case Some(BuiltInClusterId.Isolated) =>
+                    IsolatedColorClass
+                  case Some(BuiltInClusterId.Conflict) =>
+                    ConflictColorClass
+                  case Some(customCluster) =>
                     draftClusters.flatMap { draftCluster =>
                       if (draftCluster.name.bind == customCluster) {
                         Constants(draftCluster.color.bind)
@@ -86,6 +79,7 @@ object DependencyExplorer {
                         Constants.empty
                       }
                     }.all.bind.headOption.getOrElse(UnassignedColorClass)
+
                 }
               }
               Constants(
@@ -99,11 +93,7 @@ object DependencyExplorer {
                   >
                     <span class="fas fa-unlock"></span>
                     {
-                      clusteringReport.bind.compoundGraph.parent(nodeId).fold("Unassigned") {
-                        case "Facades" => "Facades"
-                        case "Utilities" => "Utilities"
-                        case customCluster => customCluster
-                      }
+                      clusteringReport.getParent(nodeId).bind.getOrElse("Unassigned")
                     }
                   </button>
                   <div class="dropdown-menu">
@@ -120,13 +110,14 @@ object DependencyExplorer {
                             Assign to {clusterTag(draftCluster).bind}
                           </button>
                         }
+
                         val requiredClusterTags = for {
                           draftCluster <- draftClusters
-                          if ClusteringReport.isReachable(clusteringReport.bind.dependentPaths, nodeId, draftCluster.name.bind)
+                          if clusteringReport.dependsOnCluster(nodeId, ClusterId(draftCluster.name.bind)).bind
                         } yield clusterTag(draftCluster).bind
                         val usedByClusterTags = for {
                           draftCluster <- draftClusters
-                          if ClusteringReport.isReachable(clusteringReport.bind.dependencyPaths, nodeId, draftCluster.name.bind)
+                          if clusteringReport.isUsedByCluster(nodeId, ClusterId(draftCluster.name.bind)).bind
                         } yield clusterTag(draftCluster).bind
                         Constants(
                           if (requiredClusterTags.isEmpty.bind) {
@@ -230,7 +221,7 @@ object DependencyExplorer {
 
   @dom
   def dependentList(graph: Graph,
-                    clusteringReport: Binding[ClusteringReport],
+                    clusteringReport: ClusteringService,
                     nodeId: String,
                     draftClusters: Vars[DraftCluster]): Binding[Node] = {
     val dependents = for {
@@ -248,7 +239,7 @@ object DependencyExplorer {
             nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]
           }) {
             Constants(dependents: _*).flatMapBinding { edge =>
-              neighborList(graph, clusteringReport, edge.v, draftClusters)
+              neighborList(graph, clusteringReport, NodeId(edge.v), draftClusters)
             }
           } else {
             Constants()
@@ -260,7 +251,7 @@ object DependencyExplorer {
 
   @dom
   def dependencyList(graph: Graph,
-                     clusteringReport: Binding[ClusteringReport],
+                     clusteringReport: ClusteringService,
                      nodeId: String,
                      draftClusters: Vars[DraftCluster]): Binding[Node] = {
     val dependencies = for {
@@ -276,7 +267,7 @@ object DependencyExplorer {
           val _ = LatestEvent.toggle(nodeDetails).bind
           if (nodeDetails.asInstanceOf[js.Dynamic].open.asInstanceOf[Boolean]) {
             Constants(dependencies: _*).flatMapBinding { edge =>
-              neighborList(graph, clusteringReport, edge.w, draftClusters)
+              neighborList(graph, clusteringReport, NodeId(edge.w), draftClusters)
             }
           } else {
             Constants()
@@ -312,12 +303,12 @@ object DependencyExplorer {
   @dom
   private def pagedNodes(graph: Graph,
                          draftClusters: Vars[DraftCluster],
-                         clusteringReport: Binding[ClusteringReport],
+                         clusteringReport: ClusteringService,
                          nodeIds: Iterable[String]): Binding[Node] = {
     val (page, rest) = nodeIds.splitAt(PageSize)
     <div>{
         Constants(page.toSeq: _*).flatMapBinding { nodeId =>
-          neighborList(graph, clusteringReport, nodeId, draftClusters)
+          neighborList(graph, clusteringReport, NodeId(nodeId), draftClusters)
         }
     }{
       if (rest.isEmpty) {
@@ -345,7 +336,7 @@ object DependencyExplorer {
   @dom
   def render(graph: Graph,
              draftClusters: Vars[DraftCluster],
-             clusteringReport: Binding[ClusteringReport],
+             clusteringReport: ClusteringService,
              rule: Var[ClusteringRule],
              selectedNodeIds: BindingSeq[String]): Binding[Node] =
     <div class="col-4" style:minWidth="0" style:overflowY="auto">{
@@ -368,7 +359,7 @@ object DependencyExplorer {
               pagedNodes(graph, draftClusters, clusteringReport, graph.sinks()).bindSeq
             case DependencyExplorerTab.Selection =>
               selectedNodeIds.flatMapBinding { nodeId =>
-                neighborList(graph, clusteringReport, nodeId, draftClusters)
+                neighborList(graph, clusteringReport, NodeId(nodeId), draftClusters)
               }
             case DependencyExplorerTab.Search =>
               <input id="filterInput" type="input" class="form-control" placeholder="Search..."/>

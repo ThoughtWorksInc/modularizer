@@ -13,7 +13,7 @@ final case class DraftCluster(name: Var[String], nodeIds: Vars[String], color: V
 }
 object DraftCluster {
 
-  def loadFrom(cluster: ClusteringRule.Cluster, color: ClusterColor) = {
+  def loadFrom(cluster: ClusteringRule.Cluster, color: ClusterColor): DraftCluster = {
     DraftCluster(Var(cluster.parent), Vars(cluster.children: _*), Var(color))
   }
 
@@ -39,5 +39,8 @@ object DraftCluster {
   final val UtilityColorClass = ClusterColor("dark", "light")
   final val FacadeColorClass = ClusterColor("light", "dark")
   final val UnassignedColorClass = ClusterColor("light", "gray")
+  final val IsolatedColorClass = ClusterColor("light", "success")
+  final val ConflictColorClass = ClusterColor("light", "danger")
+
 
 }
