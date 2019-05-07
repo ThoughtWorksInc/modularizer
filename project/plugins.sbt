@@ -28,3 +28,6 @@ addSbtPlugin("com.thoughtworks.sbt-scala-js-map" % "sbt-scala-js-map" % "4.0.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.20")
 
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
+
+addSbtPlugin("com.thoughtworks.sbt-jdeps" % "sbt-jdeps" % "0.0.0+121-0e88d429")
+
