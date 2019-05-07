@@ -1,30 +1,26 @@
 package com.thoughtworks.modularizer.js.views.workboard.ruleeditor
 
 import com.thoughtworks.binding.Binding.{BindingSeq, Vars}
-import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
-import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.modularizer.js.models.{ClusteringReport, DraftCluster}
+import com.thoughtworks.binding.{Binding, dom}
+import com.thoughtworks.modularizer.js.models._
+import com.thoughtworks.modularizer.js.services.ClusteringService
 import org.scalajs.dom._
 import org.scalajs.dom.raw.{DragEffect, Event}
-
-import scala.scalajs.js
-import scala.scalajs.js.UndefOr
 
 /**
   * @author 杨博 (Yang Bo)
   */
 class CustomClusterCard(draftClusters: Vars[DraftCluster],
-                        clusteringReport: Binding[ClusteringReport],
+                        clusteringService: ClusteringService,
                         draftCluster: DraftCluster) {
 
   private val selectLocked = new MultipleSelect(draftCluster.nodeIds)
   private val selectUnlocked = new MultipleSelect(Binding {
-    val report = clusteringReport.bind
-    val _ = report.unassignedNodes.bind
-    val allChildNodes = UndefOr
-      .any2undefOrA(report.compoundGraph.children(draftCluster.name.value))
-      .getOrElse(js.Array())
-    allChildNodes -- draftCluster.nodeIds.all.bind
+    clusteringService
+      .children(CustomClusterId(draftCluster.name.bind))
+      .all
+      .bind
+      .filterNot(draftCluster.nodeIds.all.bind.toSet)
   })
 
   def selectedLockedNodeIds: BindingSeq[String] = selectLocked.selectedNodeIds

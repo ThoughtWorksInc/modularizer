@@ -16,6 +16,7 @@ import org.scalajs.dom.window
 /**
   * @author 杨博 (Yang Bo)
   */
+@deprecated("Use [[CompoundGraph]] instead")
 final class ClusteringReport(simpleGraph: Graph, rule: ClusteringRule)(implicit executionContext: ExecutionContext) {
   import ClusteringReport._
   import rule._

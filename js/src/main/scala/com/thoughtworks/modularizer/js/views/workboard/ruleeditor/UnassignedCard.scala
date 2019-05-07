@@ -3,7 +3,7 @@ package com.thoughtworks.modularizer.js.views.workboard.ruleeditor
 import com.thoughtworks.binding.Binding.{BindingSeq, Var}
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.js.models.{ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.js.models.{ClusteringRule, DraftCluster, NodeId}
 import com.thoughtworks.modularizer.js.models.DraftCluster.ClusterColor
 import org.scalajs.dom._
 
@@ -12,9 +12,7 @@ import scala.collection.immutable
 /**
   * @author 杨博 (Yang Bo)
   */
-class UnassignedCard[Items: BindableSeq.Lt[?, String]](items: Items,
-                                                       draftClusters: BindingSeq[DraftCluster],
-                                                       rule: Var[ClusteringRule]) {
+class UnassignedCard(items: BindingSeq[NodeId], draftClusters: BindingSeq[DraftCluster], rule: Var[ClusteringRule]) {
 
   private val selectUnlockedNodes = new MultipleSelect(items.bindSeq)
 
