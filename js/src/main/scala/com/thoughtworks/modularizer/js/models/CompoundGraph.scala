@@ -5,17 +5,13 @@ import org.scalablytyped.runtime.StringDictionary
 import typings.graphlibLib.graphlibMod.{Edge, Graph, GraphOptions, Path, algNs}
 
 import scala.scalajs.js
-import scala.scalajs.js.Array
 
 /**
   * @author 杨博 (Yang Bo)
   */
-final class CompoundGraph(val underlying: Graph) {
+final class CompoundGraph(val underlying: Graph, val customClusterIds: Iterator[CustomClusterId]) {
   import CompoundGraph._
-  // Workaround for https://github.com/DefinitelyTyped/DefinitelyTyped/pull/35098
-  val clusterIds: js.Array[CustomClusterId] =
-    underlying.asInstanceOf[js.Dynamic].children().asInstanceOf[js.Array[CustomClusterId]]
-
+  val clusterIds: Seq[CustomClusterId] = customClusterIds.toSeq
   private def notCluster(nodeId: String): Boolean = underlying.children(nodeId).isEmpty
   private def notAssignedToCluster(nodeId: String): Boolean = js.isUndefined(underlying.parent(nodeId))
 
@@ -168,7 +164,7 @@ object CompoundGraph {
   // TODO: Port
   private[modularizer] def calculateDependencies(
       graph: Graph,
-      clusterIds: js.Array[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
+      clusterIds: Seq[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
     clusterIds.map { clusterId: CustomClusterId =>
       clusterId -> algNs.dijkstra(
         graph,
@@ -218,7 +214,7 @@ object CompoundGraph {
     */
   private[modularizer] def calculateDependents(
       graph: Graph,
-      clusterIds: js.Array[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
+      clusterIds: Seq[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
 
     clusterIds.map { clusterId: CustomClusterId =>
       clusterId -> algNs.dijkstra(
@@ -307,7 +303,7 @@ object CompoundGraph {
         underlying.setParent(child, parent)
       }
     }
-    new CompoundGraph(underlying)
+    new CompoundGraph(underlying, rule.clusters.map(cluster => CustomClusterId(cluster.parent)).toIterator)
   }
 
   final case class ClusterAssignment(childId: NodeId, parentId: ClusterId)

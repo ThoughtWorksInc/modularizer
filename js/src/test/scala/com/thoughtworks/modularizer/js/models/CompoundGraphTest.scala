@@ -1,41 +1,37 @@
 package com.thoughtworks.modularizer.js.models
 
 import org.scalatest.{FreeSpec, Matchers}
+import typings.graphlibDashDotLib.graphlibDashDotMod
 
+/**
+  * @author 邓何均 (Deng,HeJun)
+  * */
 class CompoundGraphTest extends FreeSpec with Matchers {
   "Test CompoundGraph Class" - {
-
     "CompoundGraph.unassignedNodeIds and clusterIds" in {
-      // given
-      import typings.graphlibDashDotLib.graphlibDashDotMod
+      this.info("given: read a compound graph ")
       val graph = graphlibDashDotMod.^.read("""
-             digraph "your.jar" {
+             digraph {
                  F -> A -> B -> C
                  A -> X -> Y -> E
                  G -> X -> C
-                 D -> Y
-             }
-           """)
+                 D -> Y 
+              } """)
 
-      graph.setParent("B", "cluster B")
-      graph.setParent("F", "cluster F")
-      graph.setParent("A", "cluster F")
-      graph.setParent("D", "cluster D")
-      graph.setParent("G", "cluster G")
-      graph.setParent("E", "cluster E")
+      graph.setParent("C", "A")
+      graph.setParent("D", "A")
+      graph.setParent("E", "B")
+      graph.setParent("F", "B")
 
-      // when
-      val compoundGraph = new CompoundGraph(graph)
+      val compoundGraph = new CompoundGraph(graph, Iterator(CustomClusterId("A"), CustomClusterId("B")))
 
-      // then
-      compoundGraph.clusterIds.toList should contain("cluster B")
-      compoundGraph.clusterIds.toList should contain("cluster F")
-      compoundGraph.clusterIds.toList should contain("cluster D")
-      compoundGraph.clusterIds.toList should contain("cluster G")
-      compoundGraph.clusterIds.toList should contain("cluster E")
-      compoundGraph.unassignedNodeIds.toList should contain("C")
-      compoundGraph.unassignedNodeIds.toList should contain("X")
-      compoundGraph.unassignedNodeIds.toList should contain("Y")
+      this.info("when: get clusterIds and unassignedNodeIds")
+      val clusterIds = compoundGraph.clusterIds
+      val unassignedNodeIds = compoundGraph.unassignedNodeIds.toSeq
+
+      this.info("then: clusterIds and unassignedNodeIds should contains correct ids")
+      clusterIds should contain only ("A", "B")
+      unassignedNodeIds should contain only ("X", "Y", "G")
     }
   }
 }
