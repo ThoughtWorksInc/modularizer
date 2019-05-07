@@ -24,9 +24,7 @@ import scala.xml.Xhtml
 /**
   * @author 杨博 (Yang Bo)
   */
-class SummaryDiagram(simpleGraph: Graph,
-                     draftClusters: Vars[DraftCluster],
-                     breakingEdges: Vars[(String, String)],
+class SummaryDiagram(breakingEdges: Vars[(String, String)],
                      clusteringRule: Var[ClusteringRule],
                      clusteringReport: Binding[ClusteringReport]) {
   //TODO: Draw selected nodes on diagram
