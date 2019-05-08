@@ -156,8 +156,8 @@ class Server(configuration: Configuration, gitPool: GitPool)(implicit system: Ac
 
                               val commit = git
                                 .commit()
-                                .setMessage(s"Update $parentPath on branch $branch")
-                                .setAuthor("Modularizer", "atryyang@thoughtworks.com")
+                                .setMessage(s"Update $fileName on branch $branch")
+                                .setAuthor(configuration.gitCommitterName, configuration.gitCommitterEmail)
                                 .setAllowEmpty(true)
                                 .call()
 
