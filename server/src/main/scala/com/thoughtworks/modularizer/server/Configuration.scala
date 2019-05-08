@@ -19,6 +19,8 @@ final case class Configuration(
     numberOfTemporaryGitClones: Int = 3,
     maxRetriesForUploading: Int = 3,
     temporaryDirectory: Path = Files.createTempDirectory("modularizer"),
+    gitCommitterName: String = "Modularizer Robot",
+    gitCommitterEmail: String = "china_consulting@thoughtworks.com",
 )
 
 object Configuration {
