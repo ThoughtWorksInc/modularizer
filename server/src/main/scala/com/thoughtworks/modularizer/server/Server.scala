@@ -18,7 +18,8 @@ import com.thoughtworks.akka.http.WebJarsSupport._
 import com.thoughtworks.dsl.Dsl
 import com.thoughtworks.dsl.Dsl.!!
 import com.thoughtworks.dsl.keywords.NoneSafe.implicitNoneSafe
-import com.thoughtworks.dsl.keywords.{Await, Return, Using}
+import com.thoughtworks.dsl.keywords.{Await, Using}
+import com.thoughtworks.dsl.domains.akka.http._
 import com.typesafe.scalalogging.Logger
 import io.github.lhotari.akka.http.health.HealthEndpoint._
 import org.eclipse.jgit.api.ResetCommand.ResetType
@@ -41,20 +42,6 @@ private object Server {
 import com.thoughtworks.modularizer.server.Server.logger
 class Server(configuration: Configuration, gitPool: GitPool)(implicit system: ActorSystem, materializer: Materializer) {
   import system.dispatcher
-
-  implicit def directiveDsl[Keyword, Value, T: Tuple](
-      implicit continuationDsl: Dsl[Keyword, Route !! T, Value]
-  ): Dsl[Keyword, Directive[T], Value] = { (keyword, handler) =>
-    Directive(continuationDsl.cpsApply(keyword, { value: Value =>
-      handler(value).tapply
-    }))
-  }
-
-  implicit def standardRouteDsl[Keyword, Value](
-      implicit routeDsl: Dsl[Keyword, Route, Value]
-  ): Dsl[Keyword, StandardRoute, Value] = { (keyword, handler) =>
-    StandardRoute(routeDsl.cpsApply(keyword, handler))
-  }
 
   val serverBinding = {
     Http.apply().bindAndHandle(route, configuration.listeningHost, configuration.listeningPort)
