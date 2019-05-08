@@ -163,7 +163,7 @@ object CompoundGraph {
   // TODO: Port
   private[modularizer] def calculateDependencies(
       graph: Graph,
-      clusterIds: Seq[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
+      clusterIds: IndexedSeq[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
     clusterIds.map { clusterId: CustomClusterId =>
       clusterId -> algNs.dijkstra(
         graph,
@@ -213,7 +213,7 @@ object CompoundGraph {
     */
   private[modularizer] def calculateDependents(
       graph: Graph,
-      clusterIds: Seq[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
+      clusterIds: IndexedSeq[CustomClusterId]): Map[CustomClusterId, StringDictionary[Path]] = {
 
     clusterIds.map { clusterId: CustomClusterId =>
       clusterId -> algNs.dijkstra(
@@ -302,7 +302,7 @@ object CompoundGraph {
         underlying.setParent(child, parent)
       }
     }
-    new CompoundGraph(underlying, rule.clusters.view.map { cluster =>
+    new CompoundGraph(underlying, rule.clusters.map { cluster =>
       CustomClusterId(cluster.parent)
     }.toIndexedSeq)
   }
