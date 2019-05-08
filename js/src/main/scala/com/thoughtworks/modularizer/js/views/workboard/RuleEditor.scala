@@ -1,47 +1,37 @@
 package com.thoughtworks.modularizer.js.views.workboard
 
-import com.thoughtworks.binding.Binding.BindingInstances.monadSyntax._
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, LatestEvent, dom}
-import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, DraftCluster}
+import com.thoughtworks.modularizer.js.models.{BuiltInClusterId, ClusteringRule, DraftCluster}
 import DraftCluster._
+import com.thoughtworks.modularizer.js.services.ClusteringService
 import com.thoughtworks.modularizer.js.utilities._
 import com.thoughtworks.modularizer.js.views.workboard.ruleeditor._
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Event
 
-import scala.scalajs.js
-import scala.scalajs.js.UndefOr
-
 // TODO in-place dependency explorer
 class RuleEditor(draftClusters: Vars[DraftCluster],
                  clusteringRule: Var[ClusteringRule],
-                 clusteringReport: Binding[ClusteringReport]) {
-  private val facadeCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
-    val facadeNodes = Binding {
-      val report = clusteringReport.bind
-      val _ = report.unassignedNodes.bind
-      (report.compoundGraph.children("Facades"): UndefOr[js.Array[String]]).getOrElse(js.Array())
-    }
-    new BuiltInClusterCard(facadeNodes, "Facades", FacadeColorClass)
+                 clusteringService: ClusteringService) {
+  private val facadeCard = {
+    new BuiltInClusterCard(clusteringService.children(BuiltInClusterId.Facade),
+                           BuiltInClusterId.Facade,
+                           FacadeColorClass)
   }
 
-  private val utilityCard: BuiltInClusterCard[Binding[js.Array[String]]] = {
-    val utilityNodes = Binding {
-      val report = clusteringReport.bind
-      val _ = report.unassignedNodes.bind
-      (report.compoundGraph.children("Utilities"): UndefOr[js.Array[String]]).getOrElse(js.Array())
-    }
-    new BuiltInClusterCard(utilityNodes, "Utilities", UtilityColorClass)
+  private val utilityCard = {
+    new BuiltInClusterCard(clusteringService.children(BuiltInClusterId.Utility),
+                           BuiltInClusterId.Utility,
+                           UtilityColorClass)
   }
 
-  private val unassignedCard: UnassignedCard[Binding[js.Array[String]]] = {
-    val unassignedNodes = clusteringReport.flatMap(_.unassignedNodes)
-    new UnassignedCard(unassignedNodes, draftClusters, clusteringRule)
+  private val unassignedCard = {
+    new UnassignedCard(clusteringService.unassignedNodeIds, draftClusters, clusteringRule)
   }
 
   private val customClusterCards: BindingSeq[CustomClusterCard] = for (draftCluster <- draftClusters) yield {
-    new CustomClusterCard(draftClusters, clusteringReport, draftCluster)
+    new CustomClusterCard(draftClusters, clusteringService, draftCluster)
   }
 
   val selectedNodeIds: BindingSeq[String] =

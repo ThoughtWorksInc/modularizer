@@ -88,7 +88,7 @@ class BranchInputGroup(implicit fetcher: GlobalFetch, gitStorageConfiguration: G
             } else {
               response.status match {
                 case 404 =>
-                  <div class="valid-feedback">The branch {input.bind.value} is avaible.</div>
+                  <div class="valid-feedback">The branch {input.bind.value} is available.</div>
                 case otherStatus =>
                   <div class="invalid-feedback">{response.statusText}</div>
               }
