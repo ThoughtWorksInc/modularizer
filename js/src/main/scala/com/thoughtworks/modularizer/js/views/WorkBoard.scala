@@ -2,8 +2,12 @@ package com.thoughtworks.modularizer.js.views
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.bindable._
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, DraftCluster}
-import com.thoughtworks.modularizer.js.services.ClusteringService.LegacyClusteringService
+import com.thoughtworks.modularizer.js.models.{ClusteringReport, ClusteringRule, CompoundGraph, DraftCluster}
+import com.thoughtworks.modularizer.js.services.ClusteringService.{
+  ClusteringAnimation,
+  LegacyClusteringService,
+  NewClusteringService
+}
 import com.thoughtworks.modularizer.js.services.GitStorageUrlConfiguration
 import com.thoughtworks.modularizer.js.utilities._
 import com.thoughtworks.modularizer.js.views.workboard._
@@ -61,9 +65,12 @@ class WorkBoard(val branch: String)(implicit fetcher: GlobalFetch,
       DraftCluster.loadFrom(cluster, DraftCluster.CustomClusterColors(i % DraftCluster.CustomClusterColors.length))
     }): _*)
 
-    // TODO: Use `NewClusteringService` instead of `LegacyClusteringService`
-    val clusteringService = new LegacyClusteringService(Binding {
-      new ClusteringReport(graph, rule.bind).tap(_.assignAll())
+//    val clusteringService = new LegacyClusteringService(Binding {
+//      new ClusteringReport(graph, rule.bind).tap(_.assignAll())
+//    })
+
+    val clusteringService = new NewClusteringService(Binding {
+      new ClusteringAnimation(CompoundGraph(graph, rule.bind))
     })
 
     val ruleEditor = new RuleEditor(draftClusters, rule, clusteringService)
