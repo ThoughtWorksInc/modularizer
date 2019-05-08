@@ -23,7 +23,7 @@ class CompoundGraphTest extends FreeSpec with Matchers {
       graph.setParent("E", "B")
       graph.setParent("F", "B")
 
-      val compoundGraph = new CompoundGraph(graph, Iterator(CustomClusterId("A"), CustomClusterId("B")))
+      val compoundGraph = new CompoundGraph(graph, IndexedSeq(CustomClusterId("A"), CustomClusterId("B")))
 
       this.info("when: get clusterIds and unassignedNodeIds")
       val clusterIds = compoundGraph.clusterIds

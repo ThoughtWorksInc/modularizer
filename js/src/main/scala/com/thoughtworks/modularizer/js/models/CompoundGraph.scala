@@ -9,9 +9,8 @@ import scala.scalajs.js
 /**
   * @author 杨博 (Yang Bo)
   */
-final class CompoundGraph(val underlying: Graph, val customClusterIds: Iterator[CustomClusterId]) {
+final class CompoundGraph(val underlying: Graph, val clusterIds: IndexedSeq[CustomClusterId]) {
   import CompoundGraph._
-  val clusterIds: Seq[CustomClusterId] = customClusterIds.toSeq
   private def notCluster(nodeId: String): Boolean = underlying.children(nodeId).isEmpty
   private def notAssignedToCluster(nodeId: String): Boolean = js.isUndefined(underlying.parent(nodeId))
 
@@ -303,7 +302,9 @@ object CompoundGraph {
         underlying.setParent(child, parent)
       }
     }
-    new CompoundGraph(underlying, rule.clusters.map(cluster => CustomClusterId(cluster.parent)).toIterator)
+    new CompoundGraph(underlying, rule.clusters.view.map { cluster =>
+      CustomClusterId(cluster.parent)
+    }.toIndexedSeq)
   }
 
   final case class ClusterAssignment(childId: NodeId, parentId: ClusterId)
