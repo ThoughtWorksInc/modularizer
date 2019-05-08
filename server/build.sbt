@@ -37,6 +37,8 @@ addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.
 
 addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-reseteverywhere" % "1.1.1+23-b7dac581")
 
+libraryDependencies += "com.thoughtworks.dsl" %% "domains-akka-http" % "0.0.0+116-c5d8c151"
+
 libraryDependencies += "com.thoughtworks.dsl" %% "keywords-await" % "1.1.1+23-b7dac581"
 
 libraryDependencies += "com.thoughtworks.dsl" %% "keywords-catch" % "1.1.1+23-b7dac581"
