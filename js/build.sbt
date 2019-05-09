@@ -29,13 +29,17 @@ libraryDependencies += "com.thoughtworks.binding" %%% "component" % "0.1.1"
 
 libraryDependencies += "com.thoughtworks.binding" %%% "bindable" % "1.1.0"
 
-addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.1.1+23-b7dac581")
+addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.1.1+29-c7067d05")
 
-libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-await" % "1.1.1+23-b7dac581"
+libraryDependencies += "com.thoughtworks.dsl" %%% "comprehension" % "1.1.1+29-c7067d05"
 
-libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-yield" % "1.1.1+23-b7dac581"
+libraryDependencies += "com.thoughtworks.dsl" %%% "domains-task" % "1.1.1+29-c7067d05"
 
-libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-each" % "1.1.1+23-b7dac581"
+libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-await" % "1.1.1+29-c7067d05"
+
+libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-yield" % "1.1.1+29-c7067d05"
+
+libraryDependencies += "com.thoughtworks.dsl" %%% "keywords-each" % "1.1.1+29-c7067d05"
 
 libraryDependencies += "io.lemonlabs" %%% "scala-uri" % "1.4.4"
 

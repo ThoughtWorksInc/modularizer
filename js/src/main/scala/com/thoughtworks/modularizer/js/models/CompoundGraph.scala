@@ -36,7 +36,7 @@ final class CompoundGraph(val underlying: Graph, val clusterIds: IndexedSeq[Cust
             val nodeId = nodeIds(nodeIndex)
             def assign() = {
               underlying.setParent(nodeId, clusterId)
-              ClusterAssignment(nodeId, clusterId) #:: {
+              ClusterAssignment(nodeId, clusterId, dependencyPaths, dependentPaths) #:: {
                 innerLoop(nodeIndex + 1, numberOfAssignedNode + 1, restNodeIds)
               }
             }
@@ -277,7 +277,7 @@ object CompoundGraph {
     */
   def findNearestClusters(paths: Map[CustomClusterId, StringDictionary[Path]],
                           clusterIds: Seq[CustomClusterId],
-                          currentNodeId: NodeId): Seq[CustomClusterId] = {
+                          currentNodeId: String): Seq[CustomClusterId] = {
     val allReachableClusterIds = clusterIds.filter(isReachable(paths, currentNodeId, _))
     allReachableClusterIds.filterNot { clusterId =>
       allReachableClusterIds.exists { existingClusterId =>
@@ -307,6 +307,9 @@ object CompoundGraph {
     }.toIndexedSeq)
   }
 
-  final case class ClusterAssignment(childId: NodeId, parentId: ClusterId)
+  final case class ClusterAssignment(childId: NodeId,
+                                     parentId: ClusterId,
+                                     dependencyPaths: Map[CustomClusterId, StringDictionary[Path]],
+                                     dependentPaths: Map[CustomClusterId, StringDictionary[Path]])
 
 }

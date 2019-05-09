@@ -60,7 +60,7 @@ object DependencyExplorer {
           currentClusterSeq.length.bind match {
             case 0 =>
               val clusterColor = Binding {
-                clusteringReport.getParent(nodeId).bind match {
+                clusteringReport.parent(nodeId).bind match {
                   case None =>
                     UnassignedColorClass
                   case Some(BuiltInClusterId.Facade) =>
@@ -93,7 +93,7 @@ object DependencyExplorer {
                   >
                     <span class="fas fa-unlock"></span>
                     {
-                      clusteringReport.getParent(nodeId).bind.getOrElse("Unassigned")
+                      clusteringReport.parent(nodeId).bind.getOrElse("Unassigned")
                     }
                   </button>
                   <div class="dropdown-menu">
